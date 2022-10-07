@@ -18,10 +18,14 @@ hour_to_minute   = 60.00
 
 #### Reshape methodologies ----
 # Rename Methods from Steeve, Ben and Chris paper – Global Change Biology
-CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(3,12,25)]               , "TA anomaly", CCA_CC_SC$Method)
-CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(4,10,13)]               , "Staining"  , CCA_CC_SC$Method_family)
-CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(5,07,21)]               , "Isotopes"  , CCA_CC_SC$Method_family)
-CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(1,09,11,14,20,22,23,26)], "BW or RGR" , CCA_CC_SC$Method_family)
+CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(3,12,25)], 
+                                 "TA anomaly", CCA_CC_SC$Method)
+CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(4,10,13)], 
+                                 "Staining"  , CCA_CC_SC$Method_family)
+CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(5,07,21)], 
+                                 "Isotopes"  , CCA_CC_SC$Method_family)
+CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(1,09,11,14,20,22,23,26)], 
+                                 "BW or RGR" , CCA_CC_SC$Method_family)
 CCA_CC_SC = CCA_CC_SC %>% mutate(., Method = replace_na(Method, "NA")) %>% 
   dplyr::filter(., Method != "Net photosynthesis", Method != "Photo", Method != "Net respiration", Method != "SOPHIE TO GET ?")
 
@@ -72,22 +76,29 @@ CCA_biom$Method[c(44:54)] <- "Total alkalinity" ; CCA_biom$Method_family[c(44:54
 CCA_biom$Method[c(59:62)] <- "BW" ; CCA_biom$Method_family[c(59:62)] <- "BW or RGR"
 
 ## Fill the gaps – Climate
+CCA_biom$Climate[which(CCA_biom$`Paper name` %in% c("Navarte et al 2020", "Noisette et al 2013 JEMBE", 
+                                                   "Ragazzola et al 2020", "Schubert et al 2021", 
+                                                   "Schubert et al. 2019", "Sordo et al 2020"))] = "Cool Temperate"
+CCA_biom$Climate[which(CCA_biom$`Paper name` == "McGraw et al. 2010")] = "Warm temperate"
+CCA_biom$Climate[which(CCA_biom$`Paper name` == "Wei et al 2020")] = "Tropical"
 
+## Some values are really high... Discuss about it w/ Steeve, Chris and Ben
 table(CCA_biom$Method_family, CCA_biom$Genus)
-
-
-
-
-
-
 Biom_stat = CCA_biom %>% group_by(Method_family, Climate) %>% 
   summarise(growth_rate = mean(std_biom_corrected_unit), SD = sd(std_biom_corrected_unit))
 
-CCA_biom %>% dplyr::filter(Climate != "NA") %>% 
-ggplot() + geom_boxplot(aes(x = Method_family, y = std_biom_corrected_unit)) +
-  facet_grid(Genus ~ Climate)
+CCA_biom %>% dplyr::filter(., std_biom_corrected_unit <= 10) %>% 
+ggplot() + geom_boxplot(aes(x = Method_family, y = std_biom_corrected_unit)) 
 
 
-# Surface
+#### Surface ----
 surface_corrected_unit <- unique(CCA_CC_SC$Unit)[c(1,8,11,13:14,16,20,30,33,49,57,61)]
 CCA_surf <- CCA_CC_SC %>% dplyr::filter(., Unit %in% surface_corrected_unit)
+
+table(CCA_surf$Unit)
+
+table(CCA_surf$Method, CCA_surf$`Paper name`) %>% View()
+
+CCA_surf <- CCA_surf %>% drop_na(Rate) %>% dplyr::filter(., !grepl("\"CCA\"", Species)) %>% 
+  dplyr::filter(., !grepl("CCA", Species))
+unique(CCA_surf$Species)
