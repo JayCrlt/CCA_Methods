@@ -5,6 +5,9 @@ rm(list = ls()) ; options(cores = parallel::detectCores())
 library(readxl)
 library(tidyverse)
 
+# Useful functions
+'%notin%' <- function(x,y)!('%in%'(x,y))
+
 # Dataset
 CCA_CC_SC <- read_excel("Data/CCA_CC_SC.xlsx")
 
@@ -13,10 +16,14 @@ mol_to_umol      = 1e+006
 nmol_to_umol     = 1e+003
 g_to_mg          = 1e+003
 molar_mass_CaCO3 = 100.10 
-day_to_hour      = 24.000
-hour_to_minute   = 60.000
+day_to_hour      = 24e+00
+hour_to_minute   = 60e+00
 year_to_day      = 365.25
 m2_to_cm2        = 1e+004
+calcite_density  = 2.7100
+year_to_month    = 12e+00
+mm_to_um         = 1e+003
+cm_to_mm         = 1e+001
 
 # Biomass and surface units vectors
 biomass_corrected_unit <- c("µmol/g/h", "nmoles g-1 dry weight min-l", "mgCaCO3 g-1 d-1", "mg g–1 d–1)", "g CaCO3/g/h", "ulmol CaCO3 g-1 h-", 
@@ -26,13 +33,14 @@ biomass_corrected_unit <- c("µmol/g/h", "nmoles g-1 dry weight min-l", "mgCaCO3
                             "mgCaCO3 g-1 DW h-1", "[myu]molCaCO3gFW^-1hr^-1")
 
 surface_corrected_unit <- c("mg/cm2/d", "Calcif in umol m-2 h-1", "mgCaCO3 cm-2 d-1", "CaCO3 [mg/cm**2/day]", "mg CaCO3 cm–2 d–1)", "umol CaCO3 cm-2 h-1", 
-                            "mmol/cm**2/day", "mg cm-2 day-1", "micro mol CaCO3 cm-2 h-1", "µmol CaCO3/cm2/h", "mg/cm-2/year")
+                            "mmol/cm**2/day", "mg cm-2 day-1", "micro mol CaCO3 cm-2 h-1", "µmol CaCO3/cm2/h", "mg/cm-2/year", "CaCO3 mg cm–2 d–1")
 
 biomass_umol_g_h       <- c("µmol/g/h", "ulmol CaCO3 g-1 h-", "umol C h -1 g -1\002", "umol_g_h", "µmol CaCO3/g/h", "[myu]molCaCO3g^-1hr^-1", 
                             "umol CaCO3 gDW-1 h-1", "Net Calcification (μmol CaCO3 g−1 DW  hr−1)", "Dark Net Calcification (μmol CaCO3 g−1 DW  hr−1)", 
                             "[myu]molCaCO3gFW^-1hr^-1")
 
-surface_mg_cm2_day     <- c("mg/cm2/d", "mgCaCO3 cm-2 d-1", "CaCO3 [mg/cm**2/day]", "mg CaCO3 cm–2 d–1)", "mg cm-2 day-1")
+surface_mg_cm2_day     <- c("mg/cm2/d", "mgCaCO3 cm-2 d-1", "CaCO3 [mg/cm**2/day]", "mg CaCO3 cm–2 d–1)", "mg cm-2 day-1", "CaCO3 mg cm–2 d–1")
+extension_mm_year      <- c("mm y-1", "mm-year", "mm/year")
 
 #### Reshape methodologies ----
 # Rename Methods from Steeve, Ben and Chris paper – Global Change Biology
@@ -63,7 +71,7 @@ CCA_biom <- CCA_biom %>%
                                              Unit == "mg CaCO3 mg-1 day-1." ~        Rate / molar_mass_CaCO3           / day_to_hour      * mol_to_umol,
                                              Unit == "mg wet weight mg-1 day-1" ~    Rate / molar_mass_CaCO3           / day_to_hour      * mol_to_umol)) 
 
-# Cgeck where there is a lack of information
+# Check where there is a lack of information
 table(CCA_biom$Method_family, CCA_biom$Method)
 
 ## Mistakes or doubts
@@ -156,3 +164,52 @@ Surfstat = CCA_surf %>% group_by(Method_family, Climate) %>%
   summarise(growth_rate = mean(std_surf_corrected_unit), SD = sd(std_surf_corrected_unit))
 
 CCA_surf %>% ggplot() + geom_boxplot(aes(x = Method_family, y = std_surf_corrected_unit)) 
+
+#### Volume ----
+CCA_vol <- CCA_CC_SC %>% dplyr::filter(., Unit == "g CaCO3/cm3/year")
+CCA_vol <- CCA_vol %>% mutate(std_biom_corrected_unit = Rate * calcite_density / molar_mass_CaCO3 * mol_to_umol / 
+                                year_to_day / day_to_hour,
+                              Method_family = rep("X-ray CT Scan", length(CCA_vol$Method)))
+CCA_vol$Climate[which(CCA_vol$`Paper name` == "Williams et al 2020")] = "Polar"
+
+# Add Genus informations
+CCA_vol$Genus   <- stringr::word(CCA_vol$Species, 1)
+CCA_vol$Species <- paste(stringr::word(CCA_vol$Species, 1), stringr::word(CCA_vol$Species, 2), sep = "_")
+
+## Add Volume dataset to Biomass dataset
+CCA_biom = rbind(CCA_biom, CCA_vol) %>% data.frame() ; rm(CCA_vol)
+
+#### Non-standardized datasets
+CCA_non_std <- CCA_CC_SC %>% dplyr::filter(., Unit %notin% c(biomass_corrected_unit, surface_corrected_unit, "g CaCO3/cm3/year"),
+                                           !grepl("%", Unit), Unit %notin% c(NA, "um", "ugCaCO3", "1 hour incubations"),
+                                           Unit %notin% c("umol CacO3 h-1","g buoyant wt. yr-1", "mm2 42days-1", "mm per mm (day-1)")) 
+                                                                                                   # non-usable (3) | already used (1)
+
+CCA_non_std$Unit = ifelse(CCA_non_std$Unit %in% extension_mm_year, "mm_year", CCA_non_std$Unit)
+CCA_non_std <- CCA_non_std %>% 
+  mutate(std_extension_corrected_unit = case_when(Unit == "mm_year"     ~ Rate,
+                                                  Unit == "mm d-1"      ~ Rate * year_to_day,
+                                                  Unit == "mm/day"      ~ Rate * year_to_day,
+                                                  Unit == "µm/day"      ~ Rate * year_to_day   / mm_to_um,
+                                                  Unit == "cm month-1"  ~ Rate * year_to_month * cm_to_mm,
+                                                  Unit == "mm/4 months" ~ Rate * 3)) 
+
+# recode NA values
+CCA_non_std$Method_family[CCA_non_std$Method_family == "NA"] <- NA
+CCA_non_std$Climate[CCA_non_std$Climate == "NA"] <- NA
+
+## Fill the gaps
+CCA_non_std$Climate[which(CCA_non_std$`Paper name` %in% c("McCoy and Ragazzola 2014", "Piazza et al 2022"))] = "Cool Temperate"
+CCA_non_std$Method[which(CCA_non_std$`Paper name` == "O'Leary et al. 2017")] = "RGR"
+CCA_non_std$Method_family[which(CCA_non_std$`Paper name` == "O'Leary et al. 2017")] = "BW or RGR"
+
+# Add Genus informations
+CCA_non_std$Genus   <- stringr::word(CCA_non_std$Species, 1)
+CCA_non_std$Species <- paste(stringr::word(CCA_non_std$Species, 1), stringr::word(CCA_non_std$Species, 2), sep = "_")
+
+## Some values are really high... Discuss about it w/ Steeve, Chris and Ben
+table(CCA_non_std$Method_family, CCA_non_std$Genus)
+nonstdstat = CCA_non_std %>% group_by(Method_family, Climate) %>% 
+  summarise(growth_rate = mean(std_extension_corrected_unit), SD = sd(std_extension_corrected_unit))
+
+CCA_non_std %>% ggplot() + geom_boxplot(aes(x = Method_family, y = std_extension_corrected_unit)) 
