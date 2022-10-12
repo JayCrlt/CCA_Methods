@@ -9,50 +9,69 @@ library(tidyverse)
 CCA_CC_SC <- read_excel("Data/CCA_CC_SC.xlsx")
 
 # Units to convert
-mol_to_umol      = 1e+06
-nmol_to_umol     = 1e+03
-g_to_mg          = 1e+03
-molar_mass_CaCO3 = 100.1 
-day_to_hour      = 24.00
-hour_to_minute   = 60.00
+mol_to_umol      = 1e+006
+nmol_to_umol     = 1e+003
+g_to_mg          = 1e+003
+molar_mass_CaCO3 = 100.10 
+day_to_hour      = 24.000
+hour_to_minute   = 60.000
+year_to_day      = 365.25
+m2_to_cm2        = 1e+004
+
+# Biomass and surface units vectors
+biomass_corrected_unit <- c("µmol/g/h", "nmoles g-1 dry weight min-l", "mgCaCO3 g-1 d-1", "mg g–1 d–1)", "g CaCO3/g/h", "ulmol CaCO3 g-1 h-", 
+                            "umol C h -1 g -1\002","umol/g(dwt)/min", "umol_g_h", "µmol CaCO3/g/h", "mg CaCO3 mg-1 day-1.", 
+                            "mg wet weight mg-1 day-1", "[myu]molCaCO3g^-1hr^-1", "umol CaCO3 gDW-1 h-1", "g per g (day-1)", "µmolC/g day", 
+                            "µmol CaCO3/g/day", "Net Calcification (μmol CaCO3 g−1 DW  hr−1)", "Dark Net Calcification (μmol CaCO3 g−1 DW  hr−1)", 
+                            "mgCaCO3 g-1 DW h-1", "[myu]molCaCO3gFW^-1hr^-1")
+
+surface_corrected_unit <- c("mg/cm2/d", "Calcif in umol m-2 h-1", "mgCaCO3 cm-2 d-1", "CaCO3 [mg/cm**2/day]", "mg CaCO3 cm–2 d–1)", "umol CaCO3 cm-2 h-1", 
+                            "mmol/cm**2/day", "mg cm-2 day-1", "micro mol CaCO3 cm-2 h-1", "µmol CaCO3/cm2/h", "mg/cm-2/year")
+
+biomass_umol_g_h       <- c("µmol/g/h", "ulmol CaCO3 g-1 h-", "umol C h -1 g -1\002", "umol_g_h", "µmol CaCO3/g/h", "[myu]molCaCO3g^-1hr^-1", 
+                            "umol CaCO3 gDW-1 h-1", "Net Calcification (μmol CaCO3 g−1 DW  hr−1)", "Dark Net Calcification (μmol CaCO3 g−1 DW  hr−1)", 
+                            "[myu]molCaCO3gFW^-1hr^-1")
+
+surface_mg_cm2_day     <- c("mg/cm2/d", "mgCaCO3 cm-2 d-1", "CaCO3 [mg/cm**2/day]", "mg CaCO3 cm–2 d–1)", "mg cm-2 day-1")
 
 #### Reshape methodologies ----
 # Rename Methods from Steeve, Ben and Chris paper – Global Change Biology
-CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(3,12,25)], 
-                                 "TA anomaly", CCA_CC_SC$Method)
-CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(4,10,13)], 
-                                 "Staining"  , CCA_CC_SC$Method_family)
-CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(5,07,21)], 
-                                 "Isotopes"  , CCA_CC_SC$Method_family)
-CCA_CC_SC$Method_family = ifelse(CCA_CC_SC$Method %in% unique(CCA_CC_SC$Method)[c(1,09,11,14,20,22,23,26)], 
-                                 "BW or RGR" , CCA_CC_SC$Method_family)
-CCA_CC_SC = CCA_CC_SC %>% mutate(., Method = replace_na(Method, "NA")) %>% 
+CCA_CC_SC$Method_family = NA
+CCA_CC_SC$Method_family[which(CCA_CC_SC$Method %in% c("TA", "TA anomaly", "TA anamoly Light calcification"))] = "TA anomaly"
+CCA_CC_SC$Method_family[which(CCA_CC_SC$Method %in% c("Staining", "Calcofluor white", "alizarin red"))] = "Staining"
+CCA_CC_SC$Method_family[which(CCA_CC_SC$Method %in% c("45Ca", "Isotope/growth band", "13C"))] = "Isotopes"
+CCA_CC_SC$Method_family[which(CCA_CC_SC$Method %in% c("BW", "RGR Wet weight", "change in total wieght", "Linear extension", 
+                                                      "RGR (SA)", "Relative growth rate", "length extension", 
+                                                      "Area extension"))] = "BW or RGR"
+CCA_CC_SC = CCA_CC_SC %>% mutate(., Method = replace_na(Method, "NA"), Method_family = replace_na(Method_family, "NA")) %>% 
   dplyr::filter(., Method != "Net photosynthesis", Method != "Photo", Method != "Net respiration", Method != "SOPHIE TO GET ?")
 
 #### Biomass ----
-biomass_corrected_unit <- unique(CCA_CC_SC$Unit)[c(3,5,9,13,15,17,21:24,29:30,33,37,43,45:46,53:54,56:57)]
 CCA_biom <- CCA_CC_SC %>% dplyr::filter(., Unit %in% biomass_corrected_unit)
-CCA_biom$Unit = ifelse(CCA_biom$Unit %in% unique(CCA_biom$Unit)[c(1,6:7,9:10,13:14,18:19,21)], "umol_g_h", CCA_biom$Unit)
+CCA_biom$Unit = ifelse(CCA_biom$Unit %in% biomass_umol_g_h, "umol_g_h", CCA_biom$Unit)
 CCA_biom <- CCA_biom %>% 
-  mutate(std_biom_corrected_unit = case_when(Unit == "umol_g_h" ~ Rate,
-                                             Unit == "nmoles g-1 dry weight min-l" ~ Rate / nmol_to_umol * hour_to_minute,
-                                             Unit == "mgCaCO3 g-1 d-1" ~ Rate / g_to_mg / molar_mass_CaCO3 / day_to_hour * mol_to_umol,
-                                             Unit == "g CaCO3/g/h" ~ Rate / molar_mass_CaCO3 * mol_to_umol,
-                                             Unit == "umol/g(dwt)/min" ~ Rate * hour_to_minute,
-                                             Unit == "mg CaCO3 mg-1 day-1." ~ Rate / g_to_mg / molar_mass_CaCO3 / day_to_hour * mol_to_umol,
-                                             Unit == "mg wet weight mg-1 day-1" ~ Rate / molar_mass_CaCO3 / day_to_hour * mol_to_umol,
-                                             Unit == "g per g (day-1)" ~ Rate / molar_mass_CaCO3 / day_to_hour * mol_to_umol,
-                                             Unit == "µmolC/g day" ~ Rate / day_to_hour,
-                                             Unit == "µmol CaCO3/g/day" ~ Rate / day_to_hour,
-                                             Unit == "mg g–1 d–1)" ~ Rate / g_to_mg /day_to_hour * mol_to_umol,
-                                             Unit == "mgCaCO3 g-1 DW h-1" ~ Rate / g_to_mg * mol_to_umol,
-                                             Unit == "µmol CaCO3/g/day" ~ Rate / day_to_hour)) 
+  mutate(std_biom_corrected_unit = case_when(Unit == "umol_g_h" ~                    Rate,
+                                             Unit == "µmolC/g day" ~                 Rate                              / day_to_hour,
+                                             Unit == "µmol CaCO3/g/day" ~            Rate                              / day_to_hour,
+                                             Unit == "umol/g(dwt)/min" ~             Rate                              * hour_to_minute,
+                                             Unit == "nmoles g-1 dry weight min-l" ~ Rate                              * hour_to_minute   / nmol_to_umol,
+                                             Unit == "g CaCO3/g/h" ~                 Rate / molar_mass_CaCO3                              * mol_to_umol,
+                                             Unit == "mgCaCO3 g-1 DW h-1" ~          Rate / molar_mass_CaCO3 / g_to_mg                    * mol_to_umol,
+                                             Unit == "mgCaCO3 g-1 d-1" ~             Rate / molar_mass_CaCO3 / g_to_mg / day_to_hour      * mol_to_umol,
+                                             Unit == "mg g–1 d–1)" ~                 Rate / molar_mass_CaCO3 / g_to_mg / day_to_hour      * mol_to_umol,
+                                             Unit == "g per g (day-1)" ~             Rate / molar_mass_CaCO3           / day_to_hour      * mol_to_umol,
+                                             Unit == "mg CaCO3 mg-1 day-1." ~        Rate / molar_mass_CaCO3           / day_to_hour      * mol_to_umol,
+                                             Unit == "mg wet weight mg-1 day-1" ~    Rate / molar_mass_CaCO3           / day_to_hour      * mol_to_umol)) 
 
-## Mistakes
+# Cgeck where there is a lack of information
+table(CCA_biom$Method_family, CCA_biom$Method)
+
+## Mistakes or doubts
 # Too much incertitude when it's wet ––– Remove.
-CCA_biom <- CCA_biom %>% dplyr::filter(., !grepl("wet",`Unit`), !grepl("Wet",`Method`))
+CCA_biom <- CCA_biom %>% dplyr::filter(., !grepl("wet",`Unit`))
 # Error unit in Graba-Landry et al. 2018 ––– in day and not in hours.
-CCA_biom$std_biom_corrected_unit[c(32,33)] <- CCA_biom$std_biom_corrected_unit[c(32,33)] / 24
+CCA_biom$std_biom_corrected_unit[which(CCA_biom$`Paper name` == "Graba-Landry et al. 2018")] = 
+  CCA_biom$std_biom_corrected_unit[which(CCA_biom$`Paper name` == "Graba-Landry et al. 2018")] / 24
 # Error unit in Donham et al 2022 ––– Percentage, useless - Remove.
 CCA_biom <- CCA_biom %>% dplyr::filter(., `Paper name` != "Donham et al 2022")
 # Suspicious w/ Barner et al. 2018 ––– Remove (waiting for this where they found the values)
@@ -66,14 +85,12 @@ CCA_biom$Genus   <- stringr::word(CCA_biom$Species, 1)
 CCA_biom$Species <- paste(stringr::word(CCA_biom$Species, 1), stringr::word(CCA_biom$Species, 2), sep = "_")
 
 ## Fill the gaps – Methods
-# Legrand et al. 2019
-CCA_biom$Method_family[c(33:36)] <- "TA anomaly"
-# Navarte et al. 2019, 2020
-CCA_biom$Method[c(39:41)] <- "RGR" ; CCA_biom$Method_family[c(39:41)] <- "BW or RGR"
-# Qui-Minet et al. 2019
-CCA_biom$Method[c(44:54)] <- "Total alkalinity" ; CCA_biom$Method_family[c(44:54)] <- "TA anomaly"
-# Sordo et al. 2018
-CCA_biom$Method[c(59:62)] <- "BW" ; CCA_biom$Method_family[c(59:62)] <- "BW or RGR"
+# BW or RGR
+CCA_biom$Method[which(CCA_biom$`Paper name` %in% c("Narvarte et al. 2019", "Navarte et al 2020", "Sordo et al. 2018"))] <- "RGR"
+CCA_biom$Method_family[which(CCA_biom$`Paper name` %in% c("Narvarte et al. 2019", "Navarte et al 2020", "Sordo et al. 2018"))] <- "BW or RGR"
+# TA Anomaly
+CCA_biom$Method[which(CCA_biom$`Paper name` %in% c("Legrand et al 2019", "Qui-Minet et al. 2019"))] <- "Total alkalinity"
+CCA_biom$Method_family[which(CCA_biom$`Paper name` %in% c("Legrand et al 2019", "Qui-Minet et al. 2019"))] <- "TA anomaly"
 
 ## Fill the gaps – Climate
 CCA_biom$Climate[which(CCA_biom$`Paper name` %in% c("Navarte et al 2020", "Noisette et al 2013 JEMBE", 
@@ -90,15 +107,52 @@ Biom_stat = CCA_biom %>% group_by(Method_family, Climate) %>%
 CCA_biom %>% dplyr::filter(., std_biom_corrected_unit <= 10) %>% 
 ggplot() + geom_boxplot(aes(x = Method_family, y = std_biom_corrected_unit)) 
 
-
 #### Surface ----
-surface_corrected_unit <- unique(CCA_CC_SC$Unit)[c(1,8,11,13:14,16,20,30,33,49,57,61)]
-CCA_surf <- CCA_CC_SC %>% dplyr::filter(., Unit %in% surface_corrected_unit)
+CCA_surf <- CCA_CC_SC %>% dplyr::filter(., Unit %in% surface_corrected_unit) %>% drop_na(Rate) %>% 
+  dplyr::filter(., !grepl("\"CCA\"", Species), !grepl("CCA", Species))
+CCA_surf$Unit = ifelse(CCA_surf$Unit %in% surface_mg_cm2_day, "mg_cm2_day", CCA_surf$Unit)
 
-table(CCA_surf$Unit)
+# Mistake pre-analysis with Johnson & Carpenter 2012
+CCA_surf$Rate[which(CCA_surf$`Paper name` == "Johnson and Carpenter 2012")] <- c(0.0059, 0.0062)
+CCA_surf$Error[which(CCA_surf$`Paper name` == "Johnson and Carpenter 2012")] <- c(0.0003, 0.00025)
+CCA_surf$Species[which(CCA_surf$`Paper name` == "Johnson and Carpenter 2012")] <- "Hydrolithon onkodes"
 
-table(CCA_surf$Method, CCA_surf$`Paper name`) %>% View()
+# Std the units
+CCA_surf <- CCA_surf %>% 
+  mutate(std_surf_corrected_unit = case_when(Unit == "mg_cm2_day" ~               Rate,
+                                             Unit == "mg/cm-2/year" ~             Rate                                  / year_to_day,
+                                             Unit == "mmol/cm**2/day" ~           Rate * molar_mass_CaCO3,
+                                             Unit == "µmol CaCO3/cm2/h" ~         Rate * molar_mass_CaCO3 / mol_to_umol * day_to_hour * g_to_mg,
+                                             Unit == "umol CaCO3 cm-2 h-1" ~      Rate * molar_mass_CaCO3 / mol_to_umol * day_to_hour * g_to_mg,
+                                             Unit == "micro mol CaCO3 cm-2 h-1" ~ Rate * molar_mass_CaCO3 / mol_to_umol * day_to_hour * g_to_mg,
+                                             Unit == "Calcif in umol m-2 h-1" ~   Rate * molar_mass_CaCO3 / mol_to_umol * day_to_hour * g_to_mg / m2_to_cm2)) 
 
-CCA_surf <- CCA_surf %>% drop_na(Rate) %>% dplyr::filter(., !grepl("\"CCA\"", Species)) %>% 
-  dplyr::filter(., !grepl("CCA", Species))
-unique(CCA_surf$Species)
+## Mistakes
+# This study is not working with surface std.
+CCA_surf <- CCA_surf %>% dplyr::filter(., `Paper name` != "Noisette et al. 2013 J phycol")
+# there is a serious doubt to include this study
+CCA_surf <- CCA_surf %>% dplyr::filter(., `Paper name` != "Burdett et al. 2018")
+# Remove negative values and recode NA values
+CCA_surf <- CCA_surf %>% dplyr::filter(., std_surf_corrected_unit >= 0)
+CCA_surf$Method_family[CCA_surf$Method_family == "NA"] <- NA
+CCA_surf$Climate[CCA_surf$Climate == "NA"] <- NA
+
+## Fill the gaps
+CCA_surf$Method_family[which(CCA_surf$`Paper name` == "Schubert et al 2021")] = "X-ray CT Scan"
+CCA_surf$Method_family[which(CCA_surf$`Paper name` == "Tanaka et al. 2016")] = "BW or RGR"
+CCA_surf$Climate[which(CCA_surf$`Paper name`       %in% c("Schubert et al 2021", "Schubert et al 2022"))] = "Cool Temperate"
+CCA_surf$Climate[which(CCA_surf$`Paper name`       == "Tanaka et al. 2016")] = "Tropical"
+CCA_surf$Climate[which(CCA_surf$`Paper name`       == "Westfield et al 2022")] = "Polar"
+CCA_surf$Method[which(CCA_surf$`Paper name`        == "Schubert et al 2021")] = "X-ray CT Scan"
+CCA_surf$Method[which(CCA_surf$`Paper name`        == "Tanaka et al. 2016")] = "RGR"
+
+# Add Genus informations
+CCA_surf$Genus   <- stringr::word(CCA_surf$Species, 1)
+CCA_surf$Species <- paste(stringr::word(CCA_surf$Species, 1), stringr::word(CCA_surf$Species, 2), sep = "_")
+
+## Some values are really high... Discuss about it w/ Steeve, Chris and Ben
+table(CCA_surf$Method_family, CCA_surf$Genus)
+Surfstat = CCA_surf %>% group_by(Method_family, Climate) %>% 
+  summarise(growth_rate = mean(std_surf_corrected_unit), SD = sd(std_surf_corrected_unit))
+
+CCA_surf %>% ggplot() + geom_boxplot(aes(x = Method_family, y = std_surf_corrected_unit)) 
