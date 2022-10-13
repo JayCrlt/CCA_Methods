@@ -4,6 +4,7 @@ rm(list = ls()) ; options(cores = parallel::detectCores())
 # Packages
 library(readxl)
 library(tidyverse)
+library(patchwork)
 
 # Useful functions
 '%notin%' <- function(x,y)!('%in%'(x,y))
@@ -321,5 +322,56 @@ CCA_Growth <- CCA_Growth %>% mutate(., Error = as.numeric(Error)) %>%
                                Unit == "mm/4 months"                 ~ Error * 3)) %>% 
   dplyr::select(`Paper name`, Genus, Climate, Temperature, Method_family, Rate_std, std_error, Standardization)
 
+# Clean Env.
+draft_dataset = list(CCA_biom, CCA_non_std, CCA_surf) ; raw_data = CCA_CC_SC
+rm(Biom_stat, CCA_biom, CCA_non_std, CCA_surf, incomplete_data, incomplete_data_biom, incomplete_data_ext, incomplete_data_surf,
+   nonstdstat, Surfstat, CCA_biom_tot, CCA_ext_tot, CCA_surf_tot, CCA_CC_SC)
 
+# Vizualize
+CCA_Growth$Climate[which(CCA_Growth$Climate == "Cool Temperate")] = "Cool temperate"
+CCA_Growth$Genus[which(CCA_Growth$`Paper name` %in% c("Ragazzola et al. 2012", "Ragazzola et al. 2013"))] = "Lithothamnion"
+col_climate = c("#c23728", "#e1a692", "#a7d5ed", "#1984c5")
+Data_viz <- CCA_Growth %>% group_split(Standardization) 
+
+# 2 studies far above than others...
+GR_viz = vector("list", 3)
+GR_viz[[1]] <- Data_viz[[1]] %>% dplyr::filter(., `Paper name` %notin% c("Graba-Landry et al. 2018", "Johnson et al 2019")) %>% 
+  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
+  geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
+                 position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
+  geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
+  geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_shape_manual(values=c(21, 22, 23, 24)) +
+  scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_x_discrete(name = "") + scale_y_continuous(name = expression("Calcification rate (µmol."*g^-1*".h"^-1*")"))
+
+GR_viz[[2]] <- Data_viz[[2]] %>% 
+  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
+  geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
+                 position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
+  geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
+  geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_shape_manual(values=c(21, 22, 23, 24)) +
+  scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_x_discrete(name = "") + scale_y_continuous(name = expression("Linear extension (mm."*yr^-1*")"))
+
+GR_viz[[3]] <- Data_viz[[3]] %>% 
+  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
+  geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
+                 position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
+  geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
+  geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_shape_manual(values=c(21, 22, 23, 24)) +
+  scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_x_discrete(name = "") + scale_y_continuous(name = expression("Calcification rate (mg."*cm^-2*".day"^-1*")"))
+
+GR_viz[[1]] + GR_viz[[2]] + GR_viz[[3]] + plot_layout(guides = "collect") &
+  scale_shape_manual(limits = unique(CCA_Growth$Method_family), values = c(22, 21, 23, 24, 25)) &
+  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) 
 
