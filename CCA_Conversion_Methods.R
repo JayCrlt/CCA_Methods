@@ -213,3 +213,113 @@ nonstdstat = CCA_non_std %>% group_by(Method_family, Climate) %>%
   summarise(growth_rate = mean(std_extension_corrected_unit), SD = sd(std_extension_corrected_unit))
 
 CCA_non_std %>% ggplot() + geom_boxplot(aes(x = Method_family, y = std_extension_corrected_unit)) 
+
+#### Incomplete studies ----
+length(unique(CCA_CC_SC$`Paper name`))                                                  # 83 studies in total
+length(unique(c(CCA_non_std$`Paper name`, CCA_biom$Paper.name, CCA_surf$`Paper name`))) # 50 studies used
+
+data_with_NA  <- unique(CCA_CC_SC$`Paper name`[which(CCA_CC_SC$Method == "NA")])
+data_complete <- unique(c(CCA_non_std$`Paper name`, CCA_biom$Paper.name, CCA_surf$`Paper name`))
+length(data_with_NA[data_with_NA %notin% data_complete])                                # 16 incomplete studies
+
+incomplete_data <- CCA_CC_SC %>% dplyr::filter(., `Paper name` %in% data_with_NA[data_with_NA %notin% data_complete],
+                                               !grepl("%", Unit), Temperature != 31.95) %>% drop_na(., Rate)
+
+# Vasquez-Elizondo and Enriquez 2016
+incomplete_data$Error[which(incomplete_data$`Paper name` == "Vasquez-Elizondo and Enriquez 2016")] = c(0.01, 0.02, 0.06)
+incomplete_data$Method[which(incomplete_data$`Paper name` == "Vasquez-Elizondo and Enriquez 2016")] = "Total alkalinity"
+incomplete_data$Method_family[which(incomplete_data$`Paper name` == "Vasquez-Elizondo and Enriquez 2016")] = "TA anomaly"
+incomplete_data$Unit[which(incomplete_data$`Paper name` == "Vasquez-Elizondo and Enriquez 2016")] = "µmol CaCO3/cm2/h"
+# Studies from Russel et al (2009 and 2012) were non found
+incomplete_data <- incomplete_data %>% dplyr::filter(., !grepl("Russel", `Paper name`))
+# Studies from Ragazzola (2012, 2013)
+incomplete_data$Unit[which(incomplete_data$`Paper name` %in% c("Ragazzola et al. 2012", "Ragazzola et al. 2013"))] = "mm_year"
+incomplete_data$Method[which(incomplete_data$`Paper name` %in% c("Ragazzola et al. 2012", "Ragazzola et al. 2013"))] = "Alizarin"
+incomplete_data$Method_family[which(incomplete_data$`Paper name` %in% c("Ragazzola et al. 2012", "Ragazzola et al. 2013"))] = "Staining"
+# Study from Semesi et al 2009
+incomplete_data$Unit[which(incomplete_data$`Paper name` == "Semesi et al. 2009")] = "nmol/gWW/min"
+incomplete_data$Method[which(incomplete_data$`Paper name` == "Semesi et al. 2009")] = "TA"
+incomplete_data$Method_family[which(incomplete_data$`Paper name` == "Semesi et al. 2009")] = "TA anomaly"
+# Study from Short et al 2014
+incomplete_data$Unit[which(incomplete_data$`Paper name` == "Short et al. 2014")] = "mg/cm-2/year"
+incomplete_data$Method[which(incomplete_data$`Paper name` == "Short et al. 2014")] = "BW"
+incomplete_data$Method_family[which(incomplete_data$`Paper name` == "Short et al. 2014")] = "BW or RGR"
+incomplete_data$Species[which(incomplete_data$`Paper name` == "Short et al. 2014")] = "Hydrolithon sp."
+
+# Std units
+incomplete_data <- incomplete_data %>% 
+  mutate(std_extension_corrected_unit = case_when(Unit == "mm_year" ~          Rate),
+         std_surf_corrected_unit      = case_when(Unit == "mg/cm-2/year" ~     Rate,
+                                                  Unit == "µmol CaCO3/cm2/h" ~ Rate * molar_mass_CaCO3 / mol_to_umol  * day_to_hour     * g_to_mg),
+         std_biom_corrected_unit      = case_when(Unit == "nmol/gWW/min" ~     Rate                    / nmol_to_umol * hour_to_minute))
+                                        
+# Add Genus informations
+incomplete_data$Genus   <- stringr::word(incomplete_data$Species, 1)
+incomplete_data$Species <- paste(stringr::word(incomplete_data$Species, 1), stringr::word(incomplete_data$Species, 2), sep = "_")
+
+# Add information to precedent dataset
+incomplete_data_biom <- incomplete_data %>% drop_na(std_biom_corrected_unit) %>% 
+  dplyr::select(., -c(std_surf_corrected_unit, std_extension_corrected_unit))
+incomplete_data_surf <- incomplete_data %>% drop_na(std_surf_corrected_unit) %>% 
+  dplyr::select(., -c(std_biom_corrected_unit, std_extension_corrected_unit))
+incomplete_data_ext <- incomplete_data %>% drop_na(std_extension_corrected_unit) %>% 
+  dplyr::select(., -c(std_surf_corrected_unit, std_biom_corrected_unit))
+
+colnames(CCA_biom) <- colnames(incomplete_data_biom) ; CCA_biom_tot <- rbind(CCA_biom, incomplete_data_biom)
+colnames(CCA_surf) <- colnames(incomplete_data_surf) ; CCA_surf_tot <- rbind(CCA_surf, incomplete_data_surf)
+colnames(CCA_non_std) <- colnames(incomplete_data_ext) ; CCA_ext_tot <- rbind(CCA_non_std, incomplete_data_ext)
+
+CCA_biom_tot <- CCA_biom_tot %>% dplyr::filter(std_biom_corrected_unit >= 0)
+
+#### Build the global dataset ----
+# Biomass
+CCA_biom_tot <- CCA_biom_tot %>% dplyr::select(., c(`Paper name`, Genus, Climate, Temperature, Method_family, 
+                                                    std_biom_corrected_unit,Error, Unit)) %>% 
+  mutate(Standardization = rep("Biomass – umol_g_h", length(CCA_biom_tot$Method_family))) %>% 
+  rename(., Rate_std = std_biom_corrected_unit)
+# Surface
+CCA_surf_tot <- CCA_surf_tot %>% dplyr::select(., c(`Paper name`, Genus, Climate, Temperature, Method_family, 
+                                                    std_surf_corrected_unit,Error, Unit)) %>% 
+  mutate(Standardization = rep("Surface – mg_cm2_day", length(CCA_surf_tot$Method_family))) %>% 
+  rename(., Rate_std = std_surf_corrected_unit)
+# Extension
+CCA_ext_tot  <- CCA_ext_tot %>% dplyr::select(., c(`Paper name`, Genus, Climate, Temperature, Method_family, 
+                                                   std_extension_corrected_unit,Error, Unit)) %>% 
+  mutate(Standardization = rep("Extension – mm_year", length(CCA_ext_tot$Method_family))) %>% 
+  rename(., Rate_std = std_extension_corrected_unit)
+
+## Merge the 3 datasets
+CCA_Growth <- rbind(CCA_biom_tot, CCA_surf_tot, CCA_ext_tot)
+unique(CCA_Growth$`Paper name`) # 55 studies used
+unique(CCA_Growth$Genus)        # 22 Genera
+
+# Define the error as well
+CCA_Growth <- CCA_Growth %>% mutate(., Error = as.numeric(Error)) %>% 
+  mutate(std_error = case_when(Unit == "nmoles g-1 dry weight min-l" ~ Error / nmol_to_umol * hour_to_minute,
+                               Unit == "mgCaCO3 g-1 d-1"             ~ Error / molar_mass_CaCO3 / g_to_mg / day_to_hour * mol_to_umol,
+                               Unit == "mg g–1 d–1)"                 ~ Error / molar_mass_CaCO3 / g_to_mg / day_to_hour * mol_to_umol,
+                               Unit == "umol_g_h"                    ~ Error,
+                               Unit == "umol/g(dwt)/min"             ~ Error * hour_to_minute,
+                               Unit == "mg CaCO3 mg-1 day-1."        ~ Error / molar_mass_CaCO3 / day_to_hour * mol_to_umol,
+                               Unit == "g per g (day-1)"             ~ Error / molar_mass_CaCO3 / day_to_hour * mol_to_umol,
+                               Unit == "µmolC/g day"                 ~ Error / day_to_hour,
+                               Unit == "µmol CaCO3/g/day"            ~ Error / day_to_hour,
+                               Unit == "mgCaCO3 g-1 DW h-1"          ~ Error / molar_mass_CaCO3 / g_to_mg * mol_to_umol,
+                               Unit == "g CaCO3/cm3/year"            ~ Error * calcite_density / molar_mass_CaCO3 * mol_to_umol / 
+                                                                               year_to_day / day_to_hour,
+                               Unit == "nmol/gWW/min"                ~ Error / nmol_to_umol * hour_to_minute,
+                               Unit == "mg_cm2_day"                  ~ Error,
+                               Unit == "umol CaCO3 cm-2 h-1"         ~ Error * molar_mass_CaCO3 / mol_to_umol * day_to_hour * g_to_mg,
+                               Unit == "mmol/cm**2/day"              ~ Error * molar_mass_CaCO3,
+                               Unit == "µmol CaCO3/cm2/h"            ~ Error * molar_mass_CaCO3 / mol_to_umol * day_to_hour * g_to_mg,
+                               Unit == "mg/cm-2/year"                ~ Error / year_to_day,
+                               Unit == "µm/day"                      ~ Error * year_to_day / mm_to_um,
+                               Unit == "mm/day"                      ~ Error * year_to_day,
+                               Unit == "cm month-1"                  ~ Error * year_to_month * cm_to_mm,
+                               Unit == "mm d-1"                      ~ Error * year_to_day,
+                               Unit == "mm_year"                     ~ Error ,
+                               Unit == "mm/4 months"                 ~ Error * 3)) %>% 
+  dplyr::select(`Paper name`, Genus, Climate, Temperature, Method_family, Rate_std, std_error, Standardization)
+
+
+
