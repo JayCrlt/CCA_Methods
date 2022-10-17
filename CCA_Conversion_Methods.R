@@ -1,10 +1,7 @@
 #### Set up environment ----
 rm(list = ls()) ; options(cores = parallel::detectCores())
-
-# Packages
-library(readxl)
-library(tidyverse)
-library(patchwork)
+library(brms); library(Matrix); library(tidyverse) ; library(readxl) ; library(patchwork) ; library(tidybayes)
+library(viridis) ; library(viridisLite) ; library(ggridges) ; library(hrbrthemes) ; library(posterior)
 
 # Useful functions
 '%notin%' <- function(x,y)!('%in%'(x,y))
@@ -342,7 +339,7 @@ GR_viz[[1]] <- Data_viz[[1]] %>% dplyr::filter(., `Paper name` %notin% c("Graba-
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_shape_manual(values=c(21, 22, 23, 24)) +
+  scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + scale_y_continuous(name = expression("Calcification rate (µmol."*g^-1*".h"^-1*")"))
@@ -354,7 +351,7 @@ GR_viz[[2]] <- Data_viz[[2]] %>%
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_shape_manual(values=c(21, 22, 23, 24)) +
+  scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + scale_y_continuous(name = expression("Linear extension (mm."*yr^-1*")"))
@@ -366,12 +363,71 @@ GR_viz[[3]] <- Data_viz[[3]] %>%
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  scale_shape_manual(values=c(21, 22, 23, 24)) +
+  scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + scale_y_continuous(name = expression("Calcification rate (mg."*cm^-2*".day"^-1*")"))
 
-GR_viz[[1]] + GR_viz[[2]] + GR_viz[[3]] + plot_layout(guides = "collect") &
-  scale_shape_manual(limits = unique(CCA_Growth$Method_family), values = c(22, 21, 23, 24, 25)) &
+Figure_1 <- GR_viz[[1]] + GR_viz[[2]] + GR_viz[[3]] + plot_layout(guides = "collect") &
+  scale_shape_manual(name = "Methods", limits = unique(CCA_Growth$Method_family), values = c(22, 21, 23, 24, 25)) &
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) 
+
+# From Morgan & Kench 2012, it might be possible to convert linear extension into calcification rates
+# For that, we need to know the Growth Adjustement Factor (Apical growth, vs massive growth, vs encrusting growth)
+GAF = c(0.05, 0.10, 0.15)
+Data_viz[[2]]$Rate_std * 0.1 * calcite_density / 365.25 * 1000 
+
+# Maybe we can look for a relationship between biomass and surface ?
+surf_estimates = Data_viz[[3]][,c(2, 6)] ; biom_estimates = Data_viz[[1]][,c(2, 6)]
+merge(surf_estimates, biom_estimates, by = "Genus", all = T)  %>% dplyr::filter(., Rate_std.y < 10) %>% drop_na() %>% 
+  ggplot(aes(x = Rate_std.x, y = Rate_std.y, col = Genus)) + geom_point()
+
+# So ? What's the best technique ?
+# No enough values for CT scan
+Data_viz_1 = Data_viz[[1]] %>% dplyr::filter(., Method_family != "X-ray CT Scan", `Paper name` %notin% c("Graba-Landry et al. 2018", "Johnson et al 2019"))
+fit_biom <- brms::brm(Rate_std ~ Climate + Genus + (1 | Method_family), data = Data_viz_1, family = gaussian(), 
+                      warmup = 3000, iter = 5000, control = list(max_treedepth = 10, adapt_delta = 0.99), core = 4)
+fit_extension <- brms::brm(Rate_std ~ Climate + Genus + (1 | Method_family), data = Data_viz[[2]], family = gaussian(), 
+                           warmup = 3000, iter = 5000, control = list(max_treedepth = 10, adapt_delta = 0.99), core = 4)
+fit_surface <- brms::brm(Rate_std ~ Climate + Genus + (1 | Method_family), data = Data_viz[[3]], family = gaussian(), 
+                         warmup = 3000, iter = 5000, control = list(max_treedepth = 11, adapt_delta = 0.99), core = 4)
+
+summary_extension = fit_extension %>% spread_draws(r_Method_family[condition,]) %>% summarise_draws()
+summary_surface   = fit_surface %>% spread_draws(r_Method_family[condition,]) %>% summarise_draws()
+summary_biomass   = fit_biom %>% spread_draws(r_Method_family[condition,]) %>% summarise_draws()
+
+# So depending about what you're looking at
+# If you're looking at growth, then, the staining technic looks more promising as the deviation is lower, with a similar amount of results
+# If you're looking to calcification, it's BW <= TA <= X-ray CT-Scan < Isotops but TA always overestimate
+
+summary           = rbind(summary_biomass, summary_extension, summary_surface)
+summary$Methods   = chartr(".", " ", summary$condition)
+vector_method     = vector("list", 8) ; for (i in 1:8) {vector_method[[i]] <- rnorm(100000, summary$mean[i], summary$sd[i])}
+data_methods = data.frame(Methods = rep(c("BW or RGR", "Isotopes", "TA anomaly", "BW or RGR", "Staining", "BW or RGR", "TA anomaly", "X-ray CT Scan"), each = 100000),
+                          Random_effect = abind::abind(vector_method), 
+                          dataset = c(rep("Biomass", 300000), rep("Extension", 200000), rep("Surface", 300000))) 
+
+data_methods = complete(data_methods, Methods, dataset, fill = list(Random_effect = NA)) %>% group_split(dataset)
+summary_list = list() ; summary_list[[1]] = summary[1:3,] ; summary_list[[2]] = summary[4:5,] ; summary_list[[3]] = summary[6:8,]
+
+colors = c("#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93")
+color_list = list() ; color_list[[1]] = colors[c(1:2,4)] ; color_list[[2]] = colors[c(1,3)] ; color_list[[3]] = colors[c(1,4:5)]
+
+Plot = list() ; for (i in 1:3) { Plot[[i]] <- data_methods[[i]] %>%
+    ggplot(aes(y = Methods, x = Random_effect, fill = Methods, color = Methods)) + geom_density_ridges(alpha=0.6, bandwidth=4) + theme_ipsum() +
+    geom_segment(data = summary_list[[i]], aes(x = mean-sd, xend = mean+sd, y = Methods , yend = Methods, color = Methods), size = 2) +
+    geom_point(data = summary_list[[i]], aes(x = mean, y = Methods, fill = Methods), size = 4, shape = 21, color = "black") +
+    scale_y_discrete(name = "") +
+    scale_fill_manual(values = color_list[[i]]) + scale_color_manual(values = color_list[[i]]) + 
+    theme(legend.position="none", panel.spacing = unit(0.1, "lines"), strip.text.x = element_text(size = 8)) + coord_flip() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) }
+
+Figure_2 <- Plot[[1]] + Plot[[2]] + Plot[[3]]
+
+#### Viz for geographic distribution
+
+data_geo <- data.frame(Study    = raw_data$`Paper name`[which(raw_data$`Paper name` %in% unique(CCA_Growth$`Paper name`))],
+                       Location = raw_data$Location[which(raw_data$`Paper name` %in% unique(CCA_Growth$`Paper name`))]) %>% 
+  mutate(., Study    = str_replace_all(Study, "al.", "al"), Study = str_replace(Study, "(?<=[a-z])(?=\\d)", " ")) %>% 
+  distinct(Study, Location)
 
