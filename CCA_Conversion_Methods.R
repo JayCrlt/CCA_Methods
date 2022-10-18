@@ -429,5 +429,52 @@ Figure_2 <- Plot[[1]] + Plot[[2]] + Plot[[3]]
 data_geo <- data.frame(Study    = raw_data$`Paper name`[which(raw_data$`Paper name` %in% unique(CCA_Growth$`Paper name`))],
                        Location = raw_data$Location[which(raw_data$`Paper name` %in% unique(CCA_Growth$`Paper name`))]) %>% 
   mutate(., Study    = str_replace_all(Study, "al.", "al"), Study = str_replace(Study, "(?<=[a-z])(?=\\d)", " ")) %>% 
-  distinct(Study, Location)
+  distinct(Study, Location) %>% arrange(Study) %>% 
+  mutate(., Long = c(44.37, -14.68, -19.16, rep(-17.49, 6), -32.01, -17.49, -32.01, -32.08, -32.01,
+                     36.56, 48.19, 37.56, 48.52, rep(23.43, 2), -33.89, 33.07, 54.19, -17.49, 
+                     8.86, -17.49, 57.82, rep(48.19, 3), 19.83, 48.39, -45.46, rep(11.48, 2),
+                     48.19, 36.56, 48.64, 48.19, rep(57.05, 2), 40.91, rep(-27.21, 3), -6.06,
+                     -31.62, rep(39.63, 2), 26.70, 19.54, 18.08, 44.03, 47.87),
+         Lat = c(-68.07, 145.46, 146.85, rep(-149.82, 6), 115.49, -149.82, 115.49, 121.83, 115.49,
+                 -121.94, -4.46, 14.21, -124.44, rep(117.09, 2), 151.66, 35.08, 11.30, -149.82,
+                 -79.41, -149.82, -3.36, rep(-4.46, 3), -155.81, -124.73, 170.83, rep(123.20, 2), 
+                 -4.46, -121.94, -3.86, -4.46, rep(11.29, 2), 12.95, rep(-48.36, 3), 39.29, 115.69,
+                 rep(-10.26, 2), 127.87, -94.37, 109.35, -67.58, -61.95))
 
+plot(data_geo$Long, data_geo$Lat)
+
+# 2.     -14.69639         , 145.4508
+# 38.    42.78259412876764 , 10.196392887409917
+# 38.    40.91096483392696 , 12.954911934891241
+# 38.    37.96140901936808 , 12.347457044448799
+
+
+
+
+
+GR_viz[[3]]$data$Rate_std*1000/365.25
+
+
+MOZ_data = GR_viz[[3]]$data[c(7:19, 27:29),] %>% 
+  summarise(., GR = mean(Rate_std), sd = sd(Rate_std))
+
+LTER <- read_csv("~/Downloads/MCR_LTER_Annual_Survey_Benthic_Cover_20220311(1).csv")
+LTER <- LTER %>% dplyr::filter(., Taxonomy_Substrate_Functional_Group == "Crustose Corallines")
+
+LTER_Summary <- LTER %>% group_by(Year, Site, Habitat, Transect, Quadrat) %>% 
+  summarise(CCA_Cover = mean(Percent_Cover)) %>% group_by(Year, Site, Habitat, Transect) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover)) %>% 
+  mutate(., CR = CCA_Cover/100 * MOZ_data$GR)
+
+LTER_BR <- LTER %>% group_by(Year, Site, Habitat, Transect, Quadrat) %>% 
+  summarise(CCA_Cover = mean(Percent_Cover)) %>% group_by(Year, Site, Habitat, Transect) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover)) %>% dplyr::filter(., Habitat == "Backreef") %>% 
+  mutate(., CR = (CCA_Cover/100) * MOZ_data$GR)
+
+A = ggplot(LTER_Summary, aes(x = Year, y = CR, col = Site)) + geom_point()
+
+B = ggplot(LTER_BR, aes(x = Year, y = CR, col = Site)) + geom_point()
+A + B
