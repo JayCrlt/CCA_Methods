@@ -449,32 +449,154 @@ plot(data_geo$Long, data_geo$Lat)
 # 38.    37.96140901936808 , 12.347457044448799
 
 
-
+GR_viz[[3]]$data %>% View()
 
 
 GR_viz[[3]]$data$Rate_std*1000/365.25
 
 
 MOZ_data = GR_viz[[3]]$data[c(7:19, 27:29),] %>% 
-  summarise(., GR = mean(Rate_std), sd = sd(Rate_std))
+  summarise(., GR = mean(Rate_std)*1000/365.25, sd = sd(Rate_std)*1000/365.25)
 
 LTER <- read_csv("~/Downloads/MCR_LTER_Annual_Survey_Benthic_Cover_20220311(1).csv")
-LTER <- LTER %>% dplyr::filter(., Taxonomy_Substrate_Functional_Group == "Crustose Corallines")
+LTER_cca <- LTER %>% dplyr::filter(., Taxonomy_Substrate_Functional_Group == "Crustose Corallines")
 
-LTER_Summary <- LTER %>% group_by(Year, Site, Habitat, Transect, Quadrat) %>% 
+LTER_Summary_cca <- LTER_cca %>% group_by(Year, Site, Habitat, Transect, Quadrat) %>% 
+  summarise(CCA_Cover = mean(Percent_Cover)) %>% group_by(Year, Site, Habitat, Transect) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
+  summarise(sd_CCA_Cover = sd(CCA_Cover), CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover), sd_CCA_Cover = mean(sd_CCA_Cover)) %>% 
+  mutate(., CR = CCA_Cover/100 * MOZ_data$GR)
+
+LTER_Summary_cca_cover = LTER_Summary_cca %>% group_by(Year) %>% 
+  summarise(cover_mean = mean(CCA_Cover), cover_sd = sd(CCA_Cover)) %>% 
+  mutate(lwr = cover_mean - cover_sd, upr = cover_mean + cover_sd)
+
+
+A = ggplot(LTER_Summary_cca, aes(x = as.numeric(Year), y = CR, col = Site)) + 
+  geom_line() + scale_y_continuous(name = "CR from corals (same unit)") %>% 
+  geom_smooth(LTER_Summary_cca, aes(x = as.numeric(Year), y = CR), method="nls", formula=y~x^2, se=FALSE)
+
+LTER_co <- LTER %>% dplyr::filter(., Taxonomy_Substrate_Functional_Group == "Coral")
+LTER_Summary_co <- LTER_co %>% group_by(Year, Site, Habitat, Transect, Quadrat) %>% 
   summarise(CCA_Cover = mean(Percent_Cover)) %>% group_by(Year, Site, Habitat, Transect) %>% 
   summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
   summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site) %>% 
   summarise(CCA_Cover = mean(CCA_Cover)) %>% 
-  mutate(., CR = CCA_Cover/100 * MOZ_data$GR)
+  mutate(., CR = CCA_Cover/100 * 3.2)
 
-LTER_BR <- LTER %>% group_by(Year, Site, Habitat, Transect, Quadrat) %>% 
-  summarise(CCA_Cover = mean(Percent_Cover)) %>% group_by(Year, Site, Habitat, Transect) %>% 
-  summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
-  summarise(CCA_Cover = mean(CCA_Cover)) %>% dplyr::filter(., Habitat == "Backreef") %>% 
-  mutate(., CR = (CCA_Cover/100) * MOZ_data$GR)
+B = ggplot(LTER_Summary_co, aes(x = Year, y = CR, col = Site)) + geom_point() +
+  scale_y_continuous(name = "CR from corals (same unit)")
 
-A = ggplot(LTER_Summary, aes(x = Year, y = CR, col = Site)) + geom_point()
+A+B+C
 
-B = ggplot(LTER_BR, aes(x = Year, y = CR, col = Site)) + geom_point()
-A + B
+data_percent = 
+  rbind(data.frame(LTER_Summary_cca, Category = rep("CCA", length(LTER_Summary_cca$Year))), 
+      data.frame(LTER_Summary_co, Category = rep("Coral", length(LTER_Summary_co$Year))))
+
+percent = LTER_Summary_cca$CR / LTER_Summary_co$CR
+
+LTER_Summary_per = cbind(LTER_Summary_co, percent)
+
+
+C = ggplot(LTER_Summary_per, aes(x = Year, y = ...5*100, col = Site)) + geom_point() +
+  scale_y_continuous(name = "Calcification rate from CCA / Calcification rate from corals")
+
+data_cca = Data_viz[[3]] %>% mutate(., Rate_std = Rate_std/1000*365.25,
+                                    std_error = std_error/1000*365.25)
+         
+
+new_figure <- data_cca %>% 
+  ggplot(aes(x = Genus, y = Rate_std, color = Climate)) + 
+  geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
+                 position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
+  geom_point(aes(fill = Climate, shape = Method_family, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
+  geom_point(aes(shape = Method_family, fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_x_discrete(name = "") + scale_y_continuous(name = expression("Calcification rate (g."*cm^-2*".yr"^-1*")"))
+
+First_dataset <- read_excel("~/Desktop/Kornder_MA.xlsx", sheet = "Sheet2")
+First_dataset = First_dataset %>% distinct(Pubyear, Genus, Species, conX) %>% drop_na()
+Second_dataset <- read_excel("~/Desktop/Kornder_MA.xlsx", sheet = "Sheet3")
+Second_dataset = Second_dataset %>% distinct(Pubyear, Genus, Species, conX)
+data_Niklas = rbind(First_dataset, Second_dataset) %>% mutate(., conX = conX/1000*365.25) 
+corals_all = data_Niklas %>% group_by(Genus) %>% summarise(mean = mean(conX), sd = sd(conX))
+corals_avg = data.frame(Genus = "All Corals", data_Niklas %>% summarise(mean = mean(conX), sd = sd(conX)))
+corals_all = rbind(corals_all, corals_avg)
+
+min = mean(data_Niklas$conX)/1000*365.25 - sd(data_Niklas$conX)/1000*365.25
+max = mean(data_Niklas$conX)/1000*365.25 + sd(data_Niklas$conX)/1000*365.25
+coral_polygon = data.frame(x = c(-Inf, -Inf, +Inf, +Inf), y = c(min, max, max, min))
+coral_polygon_2 = data.frame(x = c(-Inf, -Inf, +Inf, +Inf), 
+                             y = c(min(data_Niklas$conX)/1000*365.25, max(data_Niklas$conX)/1000*365.25,
+                                   max(data_Niklas$conX)/1000*365.25, min(data_Niklas$conX)/1000*365.25))
+
+new_figure = new_figure + geom_polygon(data = coral_polygon, aes(x = x, y= y), 
+                          color = "gold", fill = "gold", alpha = .2) +
+  geom_hline(yintercept = mean(data_Niklas$conX)/1000*365.25, linetype = "dashed", col = "gold")
+
+Figure_1 <- GR_viz[[1]] + GR_viz[[2]] + new_figure + plot_layout(guides = "collect") &
+  scale_shape_manual(name = "Methods", limits = unique(CCA_Growth$Method_family), values = c(22, 21, 23, 24, 25)) &
+  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) 
+
+forest_data_all = data_cca %>% group_by(Genus) %>% summarise(mean = mean(Rate_std), sd = sd(Rate_std))
+forest_data_avg = data.frame(Genus = "All CCA", data_cca %>% summarise(mean = mean(Rate_std), sd = sd(Rate_std)))
+forest_data_all = rbind(forest_data_all, forest_data_avg)
+
+quantile(data_cca$Rate_std[-c(1:3)], probs = c(0.01, 0.05, 0.50, 0.95, 0.99))
+quantile(data_Niklas$conX, probs = c(0.01, 0.05, 0.50, 0.95, 0.99))
+max(data_cca$Rate_std/1000*365.25)
+
+Fig3B = forest_data_all %>% dplyr::filter(., Genus != "All CCA") %>% 
+  ggplot(aes(x = Genus, y = mean)) + 
+  geom_linerange(aes(ymin = mean - sd, ymax = mean + sd)) + theme_bw() +
+  geom_point(size = 2, show.legend = F) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_discrete(name = "") + 
+  scale_y_continuous(name = "", limits = c(-0.2,1.3), breaks = seq(0,1.2,0.4)) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+
+Fig3A = forest_data_all %>% dplyr::filter(., Genus == "All CCA") %>% 
+  ggplot(aes(x = Genus, y = mean)) + 
+  geom_linerange(aes(ymin = mean - sd, ymax = mean + sd), color = "red") + theme_bw() +
+  geom_point(size = 2, show.legend = F, color = "red") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_discrete(name = "") + 
+  scale_y_continuous(name = "",
+                     limits = c(-0.2,1.3), breaks = seq(0,1.2,0.4)) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+
+Fig3D = corals_all %>% dplyr::filter(., Genus != "All Corals") %>% 
+  ggplot(aes(x = Genus, y = mean)) + 
+  geom_linerange(aes(ymin = mean - sd, ymax = mean + sd)) + theme_bw() +
+  geom_point(size = 2, show.legend = F) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_discrete(name = "") + 
+  scale_y_continuous(name = "", 
+                     limits = c(-0.2,1.3), breaks = seq(0,1.2,0.4)) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+
+Fig3C = corals_all %>% dplyr::filter(., Genus == "All Corals") %>% 
+  ggplot(aes(x = Genus, y = mean)) + 
+  geom_linerange(aes(ymin = mean - sd, ymax = mean + sd), color = "red") + theme_bw() +
+  geom_point(size = 2, show.legend = F, color = "red") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_discrete(name = "") + 
+  scale_y_continuous(name = expression("Calcification rate (g."*cm^-2*".yr"^-1*")"), 
+                     limits = c(-0.2,1.3), breaks = seq(0,1.2,0.4)) 
+
+Fig3 <- Fig3C + Fig3D + plot_spacer() + Fig3A + Fig3B + 
+  plot_layout(widths = c(1, 10, 1, 1, 10)) 
+
+Fig3
+
+ggsave(Fig3, file = "/Users/jeremy/Desktop/Figure_3.eps", device = cairo_ps())
+
+unique(raw_data$`Paper name`)
+
+table(raw_data$Method_family)
+
+
