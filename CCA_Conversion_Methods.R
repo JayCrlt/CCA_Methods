@@ -593,10 +593,84 @@ Fig3 <- Fig3C + Fig3D + plot_spacer() + Fig3A + Fig3B +
 
 Fig3
 
-ggsave(Fig3, file = "/Users/jeremy/Desktop/Figure_3.eps", device = cairo_ps())
 
-unique(raw_data$`Paper name`)
+## Case Study Moorea
 
-table(raw_data$Method_family)
+LTER <- read_csv("~/Downloads/MCR_LTER_Annual_Survey_Benthic_Cover_20220311(1).csv")
+SC = data.frame(Year = c(2005, 2008:2016),
+                SC   = c(3.07, 2.73, 2.46, 1.75, 1.58, 2.21, 1.99, 2.52, 2.30, 3.87))
+
+# CCA
+LTER_cca <- LTER %>% dplyr::filter(., Taxonomy_Substrate_Functional_Group == "Crustose Corallines") %>% 
+  dplyr::filter(., Year %in% SC$Year)
+LTER_Summary_cca <- LTER_cca %>% group_by(Year, Site, Habitat, Transect, Quadrat) %>% 
+  summarise(CCA_Cover = mean(Percent_Cover)) %>% group_by(Year, Site, Habitat, Transect) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
+  summarise(sd_CCA_Cover = sd(CCA_Cover), CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover), sd_CCA_Cover = mean(sd_CCA_Cover)) %>% 
+  mutate(., CR = CCA_Cover/100 * 1.94)
+LTER_CCA_avg = LTER_Summary_cca %>% group_by(Year) %>% 
+  summarise(Cover = mean(CCA_Cover), sd = sd(CCA_Cover), CR = mean(CR))
+LTER_CCA_avg$Year = as.numeric(LTER_CCA_avg$Year)
+
+# Coral
+LTER_coral <- LTER %>% dplyr::filter(., Taxonomy_Substrate_Functional_Group == "Coral") %>% 
+  dplyr::filter(., Year %in% SC$Year)
+LTER_Summary_coral <- LTER_coral %>% group_by(Year, Site, Habitat, Transect, Quadrat) %>% 
+  summarise(CCA_Cover = mean(Percent_Cover)) %>% group_by(Year, Site, Habitat, Transect) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
+  summarise(sd_CCA_Cover = sd(CCA_Cover), CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site) %>% 
+  summarise(CCA_Cover = mean(CCA_Cover), sd_CCA_Cover = mean(sd_CCA_Cover)) %>% 
+  mutate(., CR = CCA_Cover/100 * 3.22) %>% mutate(., Year = as.numeric(Year)) %>% 
+  inner_join(., SC, by = "Year") %>% mutate(., CR_SC = CR * SC)
+LTER_Coral_avg = LTER_Summary_coral %>% group_by(Year) %>% 
+  summarise(Cover = mean(CCA_Cover), sd = sd(CCA_Cover), CR = mean(CR)) %>% 
+  mutate(CR_SC = CR * SC$SC)
+LTER_Coral_avg$Year = as.numeric(LTER_Coral_avg$Year)
+
+Figure_2A <- ggplot() + theme_bw() +
+  geom_point(data = LTER_Summary_cca, aes(x = as.numeric(Year), y = CCA_Cover), size = .75, 
+             shape = 21, fill = "pink", alpha = .5) +
+  stat_smooth(data = LTER_CCA_avg, aes(x = Year, y = Cover),
+              method = "lm", formula = y ~ x + I(x^2), size = 1, fill = "purple", col = "pink") +
+  geom_point(data = LTER_Summary_coral, aes(x = as.numeric(Year), y = CCA_Cover), size = .75, 
+             shape = 22, fill = "orange", alpha = .5) +
+  stat_smooth(data = LTER_Coral_avg, aes(x = Year, y = Cover),
+              method = "lm", formula = y ~ x + I(x^2), size = 1, fill = "gold", col = "orange") +
+  scale_x_continuous(name = "", breaks = seq(2005,2020,1)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(name = "Cover (%)", limits = c(0,50), breaks = seq(0,50,10)) 
+
+Figure_2B <- ggplot() + theme_bw() +
+  geom_point(data = LTER_Summary_cca, aes(x = as.numeric(Year), y = CR), size = .75, 
+             shape = 21, fill = "pink", alpha = .5) +
+  stat_smooth(data = LTER_CCA_avg, aes(x = Year, y = CR),
+              method = "lm", formula = y ~ x + I(x^2), size = 1, fill = "purple", col = "pink") +
+  geom_point(data = LTER_Summary_coral, aes(x = as.numeric(Year), y = CR_SC), size = .75, 
+             shape = 22, fill = "orange", alpha = .5) +
+  stat_smooth(data = LTER_Coral_avg, aes(x = Year, y = CR_SC),
+              method = "lm", formula = y ~ x + I(x^2), size = 1, fill = "gold", col = "orange") +
+  scale_x_continuous(name = "", breaks = seq(2005,2020,1)) + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_y_continuous(name = expression("Calcification rate (kg."*m^-2*".yr"^-1*")"), 
+                     limits = c(0,5), breaks = seq(0,5,1)) 
+
+Contribution = data.frame(Year = LTER_Summary_cca$Year, 
+                          Site = LTER_Summary_cca$Site,
+                          Contribution = (LTER_Summary_cca$CR / (LTER_Summary_cca$CR + LTER_Summary_coral$CR_SC)) * 100)
+Contribution_avg = Contribution %>% group_by(Year) %>% 
+  summarise(Contribution_avg = mean(Contribution), sd = sd(Contribution)) 
+
+Figure_2C <- ggplot(Contribution_avg, aes(x = as.numeric(Year), y = as.numeric(Contribution_avg))) + 
+  stat_smooth(method = "lm", formula = y ~ x + I(x^2), size = 1, fill = "purple", col = "pink") +
+  geom_linerange(aes(ymin = as.numeric(Contribution_avg) - as.numeric(sd), 
+                     ymax = as.numeric(Contribution_avg) + as.numeric(sd)), col = "violetred") + theme_bw() +
+  geom_point(size = 2, show.legend = F, shape = 21, fill = "violetred") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_x_continuous(name = "", breaks = seq(2005,2020,1)) + 
+  scale_y_continuous(name = expression("CCA contribution into the"~CaCO[3]~"budget (%)"), 
+                     limits = c(-10,40), breaks = seq(0,40,5)) 
+
+Figure_2 <- Figure_2A + Figure_2B + Figure_2C + plot_annotation(tag_levels = 'A')
 
 
