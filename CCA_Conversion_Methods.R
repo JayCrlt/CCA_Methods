@@ -330,9 +330,16 @@ CCA_Growth$Genus[which(CCA_Growth$`Paper name` %in% c("Ragazzola et al. 2012", "
 col_climate = c("#c23728", "#e1a692", "#a7d5ed", "#1984c5")
 Data_viz <- CCA_Growth %>% group_split(Standardization) 
 
+# Add Articulate CCAs
+data_articulate = data.frame(Genus = c("Bosiella", "Corallina", "Calliarthron", "Amphiroa", "Arthrocardia", 
+                                       "Ellisolandia", "Jania"),
+                             Articulate = rep("Yes", 7))
+
 # 2 studies far above than others...
-GR_viz = vector("list", 3)
-GR_viz[[1]] <- Data_viz[[1]] %>% dplyr::filter(., `Paper name` %notin% c("Graba-Landry et al. 2018", "Johnson et al 2019")) %>% 
+GR_viz = vector("list", 6)
+GR_viz[[1]] <- Data_viz[[1]] %>% dplyr::filter(., `Paper name` %notin% c("Graba-Landry et al. 2018", "Johnson et al 2019"),
+                                               Genus != "Halimeda") %>%
+  dplyr::filter(., Genus %notin% data_articulate$Genus) %>% 
   ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
   geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
@@ -342,9 +349,12 @@ GR_viz[[1]] <- Data_viz[[1]] %>% dplyr::filter(., `Paper name` %notin% c("Graba-
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
-  scale_x_discrete(name = "") + scale_y_continuous(name = expression("Calcification rate (µmol."*g^-1*".h"^-1*")"))
+  scale_x_discrete(name = "") + 
+  scale_y_continuous(name = expression("Calcification rate (µmol."*g^-1*".h"^-1*")"), limits = c(0,30))
 
-GR_viz[[2]] <- Data_viz[[2]] %>% 
+GR_viz[[2]] <- Data_viz[[1]] %>% dplyr::filter(., `Paper name` %notin% c("Graba-Landry et al. 2018", "Johnson et al 2019"),
+                                               Genus != "Halimeda") %>%
+  dplyr::filter(., Genus %in% data_articulate$Genus) %>% 
   ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
   geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
@@ -354,9 +364,38 @@ GR_viz[[2]] <- Data_viz[[2]] %>%
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
-  scale_x_discrete(name = "") + scale_y_continuous(name = expression("Linear extension (mm."*yr^-1*")"))
+  scale_x_discrete(name = "") + scale_y_continuous(name = "") +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
-GR_viz[[3]] <- Data_viz[[3]] %>% 
+GR_viz[[3]] <- Data_viz[[2]] %>% dplyr::filter(., Genus %notin% c("Amphiroa", "Halimeda")) %>% 
+  dplyr::filter(., Genus %notin% data_articulate$Genus) %>% 
+  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
+  geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
+                 position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
+  geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
+  geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_x_discrete(name = "") + scale_y_continuous(name = expression("Linear extension (mm."*yr^-1*")")) 
+
+GR_viz[[4]] <- Data_viz[[2]] %>% dplyr::filter(., Genus %notin% c("Amphiroa", "Halimeda")) %>% 
+  dplyr::filter(., Genus %in% data_articulate$Genus) %>% 
+  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
+  geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
+                 position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
+  geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
+  geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
+  scale_x_discrete(name = "") + scale_y_continuous(name = "") +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
+
+GR_viz[[5]] <- Data_viz[[3]] %>% dplyr::filter(., Genus %notin% c("Amphiroa", "Halimeda")) %>% 
+  dplyr::filter(., Genus %notin% data_articulate$Genus) %>% 
   ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
   geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
@@ -368,7 +407,7 @@ GR_viz[[3]] <- Data_viz[[3]] %>%
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + scale_y_continuous(name = expression("Calcification rate (mg."*cm^-2*".day"^-1*")"))
 
-Figure_1A <- GR_viz[[1]] + GR_viz[[2]] + GR_viz[[3]] + plot_layout(guides = "collect") &
+Figure_1A <- GR_viz[[1]] + GR_viz[[2]] + GR_viz[[3]] + GR_viz[[4]] + GR_viz[[5]] + plot_layout(guides = "collect") &
   scale_shape_manual(name = "Methods", limits = unique(CCA_Growth$Method_family), values = c(22, 21, 23, 24, 25)) &
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) 
 
@@ -414,27 +453,33 @@ colors = c("#ff595e", "#ffca3a", "#8ac926", "#1982c4", "#6a4c93")
 color_list = list() ; color_list[[1]] = colors[c(1:2,4)] ; color_list[[2]] = colors[c(1,3)] ; color_list[[3]] = colors[c(1,4:5)]
 
 Plot = list() ; for (i in 1:3) { Plot[[i]] <- data_methods[[i]] %>%
-    ggplot(aes(y = Methods, x = Random_effect, fill = Methods, color = Methods)) + geom_density_ridges(alpha=0.6, bandwidth=4) + theme_ipsum() +
+    ggplot(aes(y = Methods, x = Random_effect, fill = Methods, color = Methods)) + 
+    geom_density_ridges(alpha=0.6, bandwidth=4, fill = NA, color = NA) + 
+    theme_ipsum() +
     geom_segment(data = summary_list[[i]], aes(x = mean-sd, xend = mean+sd, y = Methods , yend = Methods, color = Methods), size = 2) +
     geom_point(data = summary_list[[i]], aes(x = mean, y = Methods, fill = Methods), size = 4, shape = 21, color = "black") +
-    scale_x_continuous(limits = c(-40,40)) +
+    scale_x_continuous(limits = c(-5,10)) +
     scale_y_discrete(name = "") +
     scale_fill_manual(values = color_list[[i]]) + scale_color_manual(values = color_list[[i]]) + 
     theme(legend.position="none", panel.spacing = unit(0.1, "lines"), strip.text.x = element_text(size = 8)) + coord_flip() +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) }
 
-Figure_1B <- 
-
-Figure_1A <- ((GR_viz[[1]] + labs(tag = "(a)")) + theme(plot.tag = element_text(face = "bold")) +
-             (GR_viz[[2]] + labs(tag = "(c)")) + theme(plot.tag = element_text(face = "bold")) +
-             (GR_viz[[3]] + labs(tag = "(e)")) + theme(plot.tag = element_text(face = "bold"))) +
-  plot_layout(guides = "collect") &
+Figure_1A <- GR_viz[[1]] + ggtitle("(a)") + theme(plot.title = element_text(face = "bold")) +
+             GR_viz[[2]] + ggtitle("   ") + theme(plot.title = element_text(face = "bold")) +
+             plot_spacer() +
+             GR_viz[[3]] + ggtitle("(c)") + theme(plot.title = element_text(face = "bold")) +
+             GR_viz[[4]] + ggtitle("   ") + theme(plot.title = element_text(face = "bold")) +
+             plot_spacer() +
+             GR_viz[[5]] + ggtitle("(e)") + theme(plot.title = element_text(face = "bold")) +
+             plot_spacer() +
+  plot_layout(guides = "collect", nrow = 1, widths = c(9,4,2,9,3,2,9,4)) &
   scale_shape_manual(name = "Methods", limits = unique(CCA_Growth$Method_family), values = c(22, 21, 23, 24, 25)) &
-  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) 
+  scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) &
+  theme(plot.margin = unit(rep(0.1,4),"cm"))
 
-Figure_1B <- ((Plot[[1]] + labs(tag = "(b)")) + theme(plot.tag = element_text(face = "bold")) +
-             (Plot[[2]] + labs(tag = "(d)")) + theme(plot.tag = element_text(face = "bold")) +
-             (Plot[[3]] + labs(tag = "(f)")) + theme(plot.tag = element_text(face = "bold"))) 
+Figure_1B <- (Plot[[1]] + ggtitle("(b)") + theme(plot.title = element_text(face = "bold", size = 15)) +
+              Plot[[2]] + ggtitle("(d)") + theme(plot.title = element_text(face = "bold", size = 15)) +
+              Plot[[3]] + ggtitle("(f)") + theme(plot.title = element_text(face = "bold", size = 15))) 
 
 Figure_1 <- Figure_1A / Figure_1B
 
@@ -655,10 +700,11 @@ Figure_3D <- quantile_CCA_all %>% dplyr::filter(., Genus != "All CCA") %>%
 Figure_3 <- Figure_3A + Figure_3B + plot_spacer() + Figure_3C + Figure_3D + 
   plot_layout(widths = c(1, 10, 1, 1, 10)) 
 
-Figure_3 <- Figure_3A1 + plot_spacer() + Figure_3B + plot_spacer() + Figure_3D + 
-  plot_layout(widths = c(2, -1, 10, -1, 10)) + 
-  plot_annotation(tag_levels = 'a', tag_prefix = "(", tag_suffix = ")") & 
-  theme(plot.tag = element_text(face = "bold"))
+Figure_3 <- Figure_3A1 + ggtitle("(a)") + theme(plot.title = element_text(face = "bold")) +
+  Figure_3D + ggtitle("(b)") + theme(plot.title = element_text(face = "bold")) +
+  Figure_3B + ggtitle("(c)") + theme(plot.title = element_text(face = "bold")) +
+  plot_layout(widths = c(2, 10, 10))  & 
+  theme(plot.tag = element_text(face = "bold"), text = element_text(size = 20), plot.margin = unit(rep(0.1,4),"cm"))
 
 # Travis and Ben
 # quantile(data_cca$Rate_std[-c(1:3)], probs = c(0.01, 0.05, 0.25, 0.50, 0.75, 0.95, 0.99))
@@ -680,7 +726,7 @@ LTER_Summary_cca <- LTER_cca %>% group_by(Year, Site, Habitat, Transect, Quadrat
   summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
   summarise(sd_CCA_Cover = sd(CCA_Cover), CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site) %>% 
   summarise(CCA_Cover = mean(CCA_Cover), sd_CCA_Cover = mean(sd_CCA_Cover)) %>% 
-  mutate(., CR = CCA_Cover/100 * 1.94)
+  mutate(., CR = CCA_Cover/100 * 1.23)
 LTER_CCA_avg = LTER_Summary_cca %>% group_by(Year) %>% 
   summarise(Cover = mean(CCA_Cover), sd_cover = sd(CCA_Cover), sd_CR = sd(CR), CR = mean(CR)) %>% 
   mutate(., Cover = as.numeric(Cover), sd_cover = as.numeric(sd_cover), CR = as.numeric(CR),
@@ -694,7 +740,7 @@ LTER_Summary_coral <- LTER_coral %>% group_by(Year, Site, Habitat, Transect, Qua
   summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
   summarise(sd_CCA_Cover = sd(CCA_Cover), CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site) %>% 
   summarise(CCA_Cover = mean(CCA_Cover), sd_CCA_Cover = mean(sd_CCA_Cover)) %>% 
-  mutate(., CR = CCA_Cover/100 * 3.22) %>% mutate(., Year = as.numeric(Year)) %>% 
+  mutate(., CR = CCA_Cover/100 * 3.09) %>% mutate(., Year = as.numeric(Year)) %>% 
   inner_join(., SC, by = "Year") %>% mutate(., CR_SC = CR * SC)
 LTER_Coral_avg = LTER_Summary_coral %>% group_by(Year) %>% 
   summarise(sd_cover = sd(CCA_Cover), Cover = mean(CCA_Cover), sd_CR = sd(CR), CR = mean(CR), CR = mean(CR)) %>% 
@@ -717,7 +763,7 @@ Figure_2A <- ggplot(LTER_CCA_avg, aes(x = Year - 0.2, y = Cover)) +
   geom_line(data = LTER_Coral_avg, aes(x = Year + 0.2, y = Cover), col = "gold", linetype = "dashed", size = .5) +
   geom_linerange(data = LTER_Coral_avg, aes(x = Year + 0.2, ymin = Cover - sd_cover, ymax = Cover + sd_cover), col = "orange") +
   geom_point(size = 4, show.legend = F, shape = 21, fill = "violetred") +
-  geom_point(data = LTER_Coral_avg, aes(x = Year + 0.2, y = Cover), size = 4, show.legend = F, shape = 21, fill = "orange") +
+  geom_point(data = LTER_Coral_avg, aes(x = Year + 0.2, y = Cover), size = 4, show.legend = F, shape = 23, fill = "orange") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_continuous(name = "", breaks = seq(2005, 2020,1)) +
   scale_y_continuous(name = "Cover (%)", limits = c(0,50), breaks = seq(0,50,10)) 
@@ -728,7 +774,7 @@ Figure_2B <- ggplot(LTER_CCA_avg, aes(x = Year - 0.2, y = CR)) +
   geom_line(data = LTER_Coral_avg, aes(x = Year + 0.2, y = CR_SC), col = "gold", linetype = "dashed", size = .5) +
   geom_linerange(data = LTER_Coral_avg, aes(x = Year + 0.2, ymin = CR_SC - sd_CR_SC, ymax = CR_SC + sd_CR_SC), col = "orange") +
   geom_point(size = 4, show.legend = F, shape = 21, fill = "violetred") +
-  geom_point(data = LTER_Coral_avg, aes(x = Year + 0.2, y = CR_SC), size = 4, show.legend = F, shape = 21, fill = "orange") +
+  geom_point(data = LTER_Coral_avg, aes(x = Year + 0.2, y = CR_SC), size = 4, show.legend = F, shape = 23, fill = "orange") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_continuous(name = "", breaks = seq(2005, 2020,1)) + 
   scale_y_continuous(name = expression("Calcification rate (kg."*m^-2*".yr"^-1*")"), 
@@ -741,11 +787,15 @@ Figure_2C <- ggplot(Contribution_avg, aes(x = as.numeric(Year), y = as.numeric(C
   geom_point(size = 4, show.legend = F, shape = 21, fill = "violetred") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_continuous(name = "", breaks = seq(2005,2020,1)) + 
-  scale_y_continuous(name = expression("CCA contribution to the"~CaCO[3]~"budget (%)"), 
+  scale_y_continuous(name = expression(atop("CCA contribution to", paste("the"~CaCO[3]~"budget (%)"))), 
                      limits = c(0,100), breaks = seq(0,100,10)) 
 
-Figure_2 <- Figure_2A + Figure_2B + Figure_2C + 
-  plot_annotation(tag_levels = 'a', tag_prefix = "(", tag_suffix = ")") & 
-  theme(plot.tag = element_text(face = "bold"))
+Figure_2 <- Figure_2A + ggtitle("(a)") + theme(plot.title = element_text(face = "bold")) +
+  Figure_2B + ggtitle("(b)") + theme(plot.title = element_text(face = "bold")) +
+  Figure_2C + ggtitle("(c)") + theme(plot.title = element_text(face = "bold"))  & 
+  theme(plot.tag = element_text(face = "bold"), text = element_text(size = 20), plot.margin = unit(rep(0.5,4),"cm"))
+
+
+
 
 
