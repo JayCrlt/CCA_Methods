@@ -536,7 +536,7 @@ Figure_S1B <- (Plot[[1]] + ggtitle("(b)") + theme(plot.title = element_text(face
               Plot[[2]] + ggtitle("(d)") + theme(plot.title = element_text(face = "bold", size = 15)) +
               Plot[[3]] + ggtitle("(f)") + theme(plot.title = element_text(face = "bold", size = 15))) 
 
-Figure_S1 <- Figure_1A / Figure_1B
+Figure_S1 <- Figure_S1A / Figure_S1B
 
 Figure_1A <-  GR_viz[[1]] + ggtitle("(a)") + theme(plot.title = element_text(face = "bold")) +
               GR_viz[[2]] + ggtitle("   ") + theme(plot.title = element_text(face = "bold")) +
