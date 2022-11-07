@@ -615,10 +615,11 @@ Figure_3A <- summary_all %>%
   geom_point(size = 5, show.legend = F, aes(shape = Genus, fill = Genus), col = "black") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_discrete(name = "") + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_shape_manual(name = "", limits = c("All Corals", "All CCA"), values = c(23, 21)) +
   scale_color_manual(values = c("violetred", "orange")) + scale_fill_manual(values = c("violetred", "orange")) +
   scale_y_continuous(name = expression("Calcification rate (g."*cm^-2*".yr"^-1*")"), 
-                     limits = c(0,1), breaks = seq(0,1,0.1))
+                     limits = c(0,1), breaks = seq(0,1,0.2))
 
 Figure_3Ba <- quantile_CCA_all %>% dplyr::filter(., Genus != "All CCA", Genus %notin% c("Amphiroa", "Halimeda")) %>% 
   ggplot(aes(x = Genus, y = Q_0.50)) + 
@@ -627,6 +628,7 @@ Figure_3Ba <- quantile_CCA_all %>% dplyr::filter(., Genus != "All CCA", Genus %n
   geom_point(size = 5, show.legend = F, shape = 21, fill = "violetred") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_discrete(name = "") + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_y_continuous(name = "", limits = c(0,1), breaks = seq(0,1,0.1)) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
@@ -637,6 +639,7 @@ Figure_3Bb <- quantile_CCA_all %>% dplyr::filter(., Genus == "Amphiroa") %>%
   geom_point(size = 5, show.legend = F, shape = 21, fill = "violetred") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_discrete(name = "") + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_y_continuous(name = "", limits = c(0,1), breaks = seq(0,1,0.1)) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
@@ -647,6 +650,7 @@ Figure_3Bc <- quantile_CCA_all %>% dplyr::filter(., Genus == "Halimeda") %>%
   geom_point(size = 5, show.legend = F, shape = 21, fill = "violetred") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_discrete(name = "") + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_y_continuous(name = "", limits = c(0,1), breaks = seq(0,1,0.1)) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
@@ -657,6 +661,7 @@ Figure_3C <- Quantile_Cor_all %>% dplyr::filter(., Genus != "All Corals") %>%
   geom_point(size = 5, show.legend = F, shape = 23, fill = "orange") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_x_discrete(name = "") + 
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_y_continuous(name = "", limits = c(0,1), breaks = seq(0,1,0.1)) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
@@ -734,6 +739,7 @@ Figure_2A <- ggplot(LTER_CCA_avg, aes(x = Year - 0.2, y = Cover)) +
   geom_point(size = 4, show.legend = F, shape = 21, fill = "violetred") +
   geom_point(data = LTER_Coral_avg, aes(x = Year + 0.2, y = Cover), size = 4, show.legend = F, shape = 23, fill = "orange") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_x_continuous(name = "", breaks = seq(2005, 2020,1)) +
   scale_y_continuous(name = "Cover (%)", limits = c(0,50), breaks = seq(0,50,10)) 
 
@@ -745,6 +751,7 @@ Figure_2B <- ggplot(LTER_CCA_avg, aes(x = Year - 0.2, y = CR)) +
   geom_point(size = 4, show.legend = F, shape = 21, fill = "violetred") +
   geom_point(data = LTER_Coral_avg, aes(x = Year + 0.2, y = CR_SC), size = 4, show.legend = F, shape = 23, fill = "orange") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_x_continuous(name = "", breaks = seq(2005, 2020,1)) + 
   scale_y_continuous(name = expression(atop(CaCO[3]~"production", paste("(kg."*m^-2*".yr"^-1*")"))), 
                      limits = c(0,6), breaks = seq(0,6,1)) 
@@ -755,6 +762,7 @@ Figure_2C <- ggplot(Contribution_avg, aes(x = as.numeric(Year), y = as.numeric(C
                      ymax = as.numeric(Contribution_avg) + as.numeric(sd)), col = "violetred") + theme_bw() +
   geom_point(size = 4, show.legend = F, shape = 21, fill = "violetred") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_x_continuous(name = "", breaks = seq(2005,2020,1)) + 
   scale_y_continuous(name = expression(atop("CCA contribution to", paste("the"~CaCO[3]~"budget (%)"))), 
                      limits = c(0,100), breaks = seq(0,100,10)) 
