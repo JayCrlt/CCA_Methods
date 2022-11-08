@@ -425,8 +425,9 @@ GR_viz[[5]] <- Data_viz[[2]] %>% dplyr::filter(., Genus %notin% c("Halimeda")) %
 
 GR_viz[[6]] <- Data_viz[[3]] %>% dplyr::filter(., Genus %notin% c("Halimeda")) %>% 
   dplyr::filter(., Genus %notin% data_articulate$Genus) %>% 
-  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
-  geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
+  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std * 0.36525, color = Climate)) + 
+  geom_linerange(aes(ymin = Rate_std * 0.36525 - std_error * 0.36525, 
+                     ymax = Rate_std * 0.36525 + std_error * 0.36525, color = Climate), 
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
@@ -435,13 +436,14 @@ GR_viz[[6]] <- Data_viz[[3]] %>% dplyr::filter(., Genus %notin% c("Halimeda")) %
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + 
-  scale_y_continuous(name = expression("Calcification rate (mg."*cm^-2*".day"^-1*")"), 
-                     limits = c(0,4.1), breaks = seq(0,4,1))
+  scale_y_continuous(name = expression("Calcification rate (g."*cm^-2*".yr"^-1*")"), 
+                     limits = c(0,1.2), breaks = seq(0,1.2,.3))
 
 GR_viz[[7]] <- Data_viz[[3]] %>% dplyr::filter(., Genus %notin% c("Halimeda")) %>% 
   dplyr::filter(., Genus %in% data_articulate$Genus) %>% 
-  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
-  geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
+  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std * 0.36525, color = Climate)) + 
+  geom_linerange(aes(ymin = Rate_std * 0.36525 - std_error * 0.36525, 
+                     ymax = Rate_std * 0.36525 + std_error * 0.36525, color = Climate), 
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
@@ -450,13 +452,13 @@ GR_viz[[7]] <- Data_viz[[3]] %>% dplyr::filter(., Genus %notin% c("Halimeda")) %
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + 
-  scale_y_continuous(name = "", 
-                     limits = c(0,4.1), breaks = seq(0,4,1)) +
+  scale_y_continuous(name = "", limits = c(0,1.2), breaks = seq(0,1.2,.3)) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
 GR_viz[[8]] <- Data_viz[[3]] %>% dplyr::filter(., Genus == "Halimeda") %>% 
-  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std, color = Climate)) + 
-  geom_linerange(aes(ymin = Rate_std - std_error, ymax = Rate_std + std_error, color = Climate), 
+  ggplot(aes(x = Genus, shape = Method_family, y = Rate_std * 0.36525, color = Climate)) + 
+  geom_linerange(aes(ymin = Rate_std * 0.36525 - std_error * 0.36525, 
+                     ymax = Rate_std * 0.36525 + std_error * 0.36525, color = Climate), 
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
@@ -465,8 +467,7 @@ GR_viz[[8]] <- Data_viz[[3]] %>% dplyr::filter(., Genus == "Halimeda") %>%
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + 
-  scale_y_continuous(name = "", 
-                     limits = c(0,4.1), breaks = seq(0,4,1)) +
+  scale_y_continuous(name = "", limits = c(0,1.2), breaks = seq(0,1.2,.3)) +
   theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
 # So ? What's the best technique ?
@@ -557,14 +558,63 @@ Plot = list() ; for (i in 1:3) { Plot[[i]] <- data_methods[[i]] %>% dplyr::filte
   theme_ipsum() +
   geom_segment(data = summary_list[[i]], aes(x = mean-sd, xend = mean+sd, y = Methods , yend = Methods, color = Methods), size = 2) +
   geom_point(data = summary_list[[i]], aes(x = mean, y = Methods, fill = Methods), size = 4, shape = 21, color = "black") +
-  scale_x_continuous(limits = c(-5,5)) +
+  scale_x_continuous(name = "Effect size", limits = c(-5,5)) +
   scale_y_discrete(name = "") +
+  geom_segment(aes(x = 0, xend = Random_effect, y = -Inf, yend = Inf), size = 2, linetype = 1) +
   scale_fill_manual(values = color_list[[i]]) + scale_color_manual(values = color_list[[i]]) + 
-  theme(legend.position="none", panel.spacing = unit(0.1, "lines"), strip.text.x = element_text(size = 8)) + coord_flip() +
+  theme(legend.position="none", panel.spacing = unit(0.1, "lines"), strip.text.x = element_text(size = 8)) + #coord_flip() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) }
+
+summary_list[[1]] = rbind(summary_list[[1]],
+                          data.frame(condition = "X-ray.CT.Scan", variable = "r_Method_family",
+                                     mean = NA, median = NA, sd = NA, mad = NA, q5 = NA,
+                                     q95 = NA, rhat = NA, ess_bulk = NA, ess_tail = NA,
+                                     Methods = "X-ray CT Scan"))
+
+summary_list[[3]] = rbind(summary_list[[3]],
+                          data.frame(condition = "Isotopes", variable = "r_Method_family",
+                                     mean = NA, median = NA, sd = NA, mad = NA, q5 = NA,
+                                     q95 = NA, rhat = NA, ess_bulk = NA, ess_tail = NA,
+                                     Methods = "Isotopes"))
+
+Plot_5A = data_methods[[1]] %>% dplyr::filter(Methods != "Staining") %>% drop_na() %>% 
+  rbind(data.frame(Methods = "X-ray CT Scan", dataset = "Biomass", Random_effect = 0)) %>% 
+  ggplot(aes(y = Methods, x = Random_effect, fill = Methods, color = Methods, shape = Methods)) + 
+  theme_bw() +
+  geom_segment(aes(x = 0, xend = 0, y = -Inf, yend = Inf), size = 0.75, linetype = 1, color = "black") +
+  geom_segment(data = summary_list[[1]], aes(x = mean-sd, xend = mean+sd, 
+                                             y = Methods , yend = Methods, color = Methods), size = 2) +
+  geom_point(data = summary_list[[1]], aes(x = mean, y = Methods, fill = Methods), size = 4, color = "black") +
+  scale_x_continuous(name = "Effect size", limits = c(-5,5)) +
+  scale_y_discrete(name = "") +
+  scale_fill_manual(values = c("#ff595e", "#ffca3a", "#1982c4", "#6a4c93")) + 
+  scale_color_manual(values = c("#ff595e", "#ffca3a", "#1982c4", "#6a4c93")) + 
+  scale_shape_manual(values=c(21, 22, 23, 24)) +
+  theme(legend.position="none", panel.spacing = unit(0.1, "lines"), strip.text.x = element_text(size = 8)) + #coord_flip() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+Plot_5B = data_methods[[3]] %>% dplyr::filter(Methods != "Staining") %>% drop_na() %>% 
+  rbind(data.frame(Methods = "Isotopes", dataset = "Biomass", Random_effect = 0)) %>% 
+  ggplot(aes(y = Methods, x = Random_effect, fill = Methods, color = Methods, shape = Methods)) + 
+  theme_bw() +
+  geom_segment(aes(x = 0, xend = 0, y = -Inf, yend = Inf), size = 1, linetype = 1, color = "black") +
+  geom_segment(data = summary_list[[3]], aes(x = mean-sd, xend = mean+sd, 
+                                             y = Methods , yend = Methods, color = Methods), size = 2) +
+  geom_point(data = summary_list[[3]], aes(x = mean, y = Methods, fill = Methods), size = 4, color = "black") +
+  scale_x_continuous(name = "Effect size", limits = c(-5,5)) +
+  scale_y_discrete(name = "") +
+  scale_fill_manual(values = c("#ff595e", "#ffca3a", "#1982c4", "#6a4c93")) + 
+  scale_color_manual(values = c("#ff595e", "#ffca3a", "#1982c4", "#6a4c93")) + 
+  scale_shape_manual(values=c(21, 22, 23, 24)) +
+  theme(legend.position="none", panel.spacing = unit(0.1, "lines"), strip.text.x = element_text(size = 8)) + #coord_flip() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.y = element_blank(), axis.ticks.y = element_blank())
 
 Figure_1B <- (Plot[[1]] + ggtitle("(b)") + theme(plot.title = element_text(face = "bold", size = 15)) +
               Plot[[3]] + ggtitle("(d)") + theme(plot.title = element_text(face = "bold", size = 15))) 
+
+Figure_1B <- (Plot_5A + ggtitle("(b)") + theme(plot.title = element_text(face = "bold", size = 15)) +
+              Plot_5B + ggtitle("(d)") + theme(plot.title = element_text(face = "bold", size = 15))) 
 
 ### Making Figure 2 CCA vs Coral CaCO3 production rates ----
 data_cca = Data_viz[[3]] %>% mutate(., Rate_std = Rate_std/1000*365.25, std_error = std_error/1000*365.25)
@@ -775,7 +825,7 @@ Figure_2 <- Figure_2A + ggtitle("(a)") + theme(plot.title = element_text(face = 
   scale_color_manual(name = "", values = c("violetred", "orange"), limits = c("CCA", "Corals")) 
 
 ggsave(Figure_1A, filename = "Figures/Figure_5A.png", device = "png", height = 10, width = 25, units = "cm", dpi = 300)
-ggsave(Figure_1B, filename = "Figures/Figure_5B.png", device = "png", height = 10, width = 25, units = "cm", dpi = 300)
+ggsave(Figure_1B, filename = "Figures/Figure_5B.png", device = "png", height = 6, width = 25, units = "cm", dpi = 300)
 ggsave(Figure_3, filename = "Figures/Figure_2.png", device = "png", height = 15, width = 35, units = "cm", dpi = 300)
 ggsave(Figure_2, filename = "Figures/Figure_4.png", device = "png", height = 13, width = 35, units = "cm", dpi = 300)
 
