@@ -595,6 +595,7 @@ Plot_5A = data_methods[[1]] %>% dplyr::filter(Methods != "Staining") %>% drop_na
   geom_point(data = summary_list[[1]], aes(x = mean, y = Methods, fill = Methods), size = 4, color = "black") +
   scale_x_continuous(name = "Effect size", limits = c(-5,5)) +
   scale_y_discrete(name = "") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = c("#ff595e", "#ffca3a", "#1982c4", "#6a4c93")) + 
   scale_color_manual(values = c("#ff595e", "#ffca3a", "#1982c4", "#6a4c93")) + 
   scale_shape_manual(values=c(21, 22, 23, 24)) +
@@ -611,6 +612,7 @@ Plot_5B = data_methods[[3]] %>% dplyr::filter(Methods != "Staining") %>% drop_na
   geom_point(data = summary_list[[3]], aes(x = mean, y = Methods, fill = Methods), size = 4, color = "black") +
   scale_x_continuous(name = "Effect size", limits = c(-5,5)) +
   scale_y_discrete(name = "") +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = c("#ff595e", "#ffca3a", "#1982c4", "#6a4c93")) + 
   scale_color_manual(values = c("#ff595e", "#ffca3a", "#1982c4", "#6a4c93")) + 
   scale_shape_manual(values=c(21, 22, 23, 24)) +
