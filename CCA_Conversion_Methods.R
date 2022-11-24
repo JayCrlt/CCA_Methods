@@ -360,8 +360,9 @@ GR_viz[[1]] <- Data_viz[[1]] %>% dplyr::filter(., `Paper name` %notin% c("Graba-
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + 
@@ -375,8 +376,9 @@ GR_viz[[2]] <- Data_viz[[1]] %>% dplyr::filter(., `Paper name` %notin% c("Graba-
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + scale_y_continuous(name = "") +
@@ -389,8 +391,9 @@ GR_viz[[3]] <- Data_viz[[1]] %>% dplyr::filter(., `Paper name` %notin% c("Graba-
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + scale_y_continuous(name = "") +
@@ -403,8 +406,9 @@ GR_viz[[4]] <- Data_viz[[2]] %>% dplyr::filter(., Genus %notin% c("Halimeda")) %
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + scale_y_continuous(name = expression("Linear extension (mm."*yr^-1*")")) 
@@ -416,8 +420,9 @@ GR_viz[[5]] <- Data_viz[[2]] %>% dplyr::filter(., Genus %notin% c("Halimeda")) %
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + scale_y_continuous(name = "") +
@@ -431,8 +436,9 @@ GR_viz[[6]] <- Data_viz[[3]] %>% dplyr::filter(., Genus %notin% c("Halimeda")) %
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + 
@@ -447,8 +453,9 @@ GR_viz[[7]] <- Data_viz[[3]] %>% dplyr::filter(., Genus %notin% c("Halimeda")) %
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + 
@@ -462,8 +469,9 @@ GR_viz[[8]] <- Data_viz[[3]] %>% dplyr::filter(., Genus == "Halimeda") %>%
                  position = position_jitter(seed = 123, width = 0.3)) + theme_bw() +
   geom_point(aes(fill = Climate, color = Climate), position = position_jitter(seed = 123, width = 0.3), size = 2) +
   geom_point(aes(fill = Climate), color = "black", position = position_jitter(seed = 123, width = 0.3), size = 2, show.legend = F) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_shape_manual(name = "Methods", values=c(21, 22, 23, 24)) +
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_fill_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_color_manual(values = col_climate, limits = c("Tropical", "Warm temperate", "Cool temperate", "Polar")) +
   scale_x_discrete(name = "") + 
@@ -676,7 +684,7 @@ Figure_3Ba <- quantile_CCA_all %>% dplyr::filter(., Genus != "All CCA", Genus %n
   geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "violetred") +
   geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "violetred") + theme_bw() +
   geom_point(size = 5, show.legend = F, shape = 21, fill = "violetred") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_x_discrete(name = "") + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_y_continuous(name = "", limits = c(0,1), breaks = seq(0,1,0.1)) +
@@ -684,10 +692,10 @@ Figure_3Ba <- quantile_CCA_all %>% dplyr::filter(., Genus != "All CCA", Genus %n
 
 Figure_3Bb <- quantile_CCA_all %>% dplyr::filter(., Genus == "Amphiroa") %>% 
   ggplot(aes(x = Genus, y = Q_0.50)) + 
-  geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "violetred") +
-  geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "violetred") + theme_bw() +
-  geom_point(size = 5, show.legend = F, shape = 21, fill = "violetred") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "#7f0f41") +
+  geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "#7f0f41") + theme_bw() +
+  geom_point(size = 5, show.legend = F, shape = 21, fill = "#7f0f41") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_x_discrete(name = "") + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_y_continuous(name = "", limits = c(0,1), breaks = seq(0,1,0.1)) +
@@ -695,10 +703,10 @@ Figure_3Bb <- quantile_CCA_all %>% dplyr::filter(., Genus == "Amphiroa") %>%
 
 Figure_3Bc <- quantile_CCA_all %>% dplyr::filter(., Genus == "Halimeda") %>% 
   ggplot(aes(x = Genus, y = Q_0.50)) + 
-  geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "violetred") +
-  geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "violetred") + theme_bw() +
-  geom_point(size = 5, show.legend = F, shape = 21, fill = "violetred") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "brown") +
+  geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "brown") + theme_bw() +
+  geom_point(size = 5, show.legend = F, shape = 21, fill = "brown") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_x_discrete(name = "") + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_y_continuous(name = "", limits = c(0,1), breaks = seq(0,1,0.1)) +
@@ -709,7 +717,7 @@ Figure_3C <- Quantile_Cor_all %>% dplyr::filter(., Genus != "All Corals") %>%
   geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "orange") +
   geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "orange") + theme_bw() +
   geom_point(size = 5, show.legend = F, shape = 23, fill = "orange") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_x_discrete(name = "") + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
   scale_y_continuous(name = "", limits = c(0,1), breaks = seq(0,1,0.1)) +
@@ -790,7 +798,7 @@ Figure_2A <- ggplot(LTER_CCA_avg, aes(x = Year - 0.2, y = Cover)) +
   geom_point(data = LTER_Coral_avg, aes(x = Year + 0.2, y = Cover), size = 4, show.legend = F, shape = 23, fill = "orange") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  scale_x_continuous(name = "", breaks = seq(2005, 2020,1)) +
+  scale_x_continuous(name = "", breaks = seq(2005, 2020,5)) +
   scale_y_continuous(name = "Cover (%)", limits = c(0,50), breaks = seq(0,50,10)) 
 
 Figure_2B <- ggplot(LTER_CCA_avg, aes(x = Year - 0.2, y = CR)) + 
@@ -802,7 +810,7 @@ Figure_2B <- ggplot(LTER_CCA_avg, aes(x = Year - 0.2, y = CR)) +
   geom_point(data = LTER_Coral_avg, aes(x = Year + 0.2, y = CR_SC), size = 4, show.legend = F, shape = 23, fill = "orange") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  scale_x_continuous(name = "", breaks = seq(2005, 2020,1)) + 
+  scale_x_continuous(name = "", breaks = seq(2005, 2020,5)) + 
   scale_y_continuous(name = expression(atop(CaCO[3]~"production", paste("(kg."*m^-2*".yr"^-1*")"))), 
                      limits = c(0,6), breaks = seq(0,6,1)) 
 
@@ -813,7 +821,7 @@ Figure_2C <- ggplot(Contribution_avg, aes(x = as.numeric(Year), y = as.numeric(C
   geom_point(size = 4, show.legend = F, shape = 21, fill = "violetred") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
-  scale_x_continuous(name = "", breaks = seq(2005,2020,1)) + 
+  scale_x_continuous(name = "", breaks = seq(2005,2020,5)) + 
   scale_y_continuous(name = expression(atop("CCA contribution to", paste("the"~CaCO[3]~"budget (%)"))), 
                      limits = c(0,100), breaks = seq(0,100,10)) 
 
