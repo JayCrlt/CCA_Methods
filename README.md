@@ -8,8 +8,8 @@ Scripts and data for Increasing importance of crustose coralline algae to coral 
 This Github repository is structured as follows:
 
 - :file_folder: [``R``](https://github.com/JayCrlt/CCA_Methods/tree/master/R/Scripts) contains the current script and R project related to this study
-  - The script to provide the raw figure is [``CCA_Calcification_Rates``] 
-  - The script to generate the data from the systematic review is [``Systematic_Review_CCA``] 
+  - The script to provide the raw figure is ``CCA_Calcification_Rates`` 
+  - The script to generate the data from the systematic review is ``Systematic_Review_CCA`` 
 - :file_folder: [``data``](https://github.com/JayCrlt/CCA_Methods/tree/master/Data) contains the following sub-folders
 - :file_folder: [``models``](https://github.com/JayCrlt/CCA_Methods/tree/master/Models) which hosts the models built with this script
 - :file_folder: [``figures``](https://github.com/JayCrlt/CCA_Methods/tree/master/Figures) which hosts the figures for this study
