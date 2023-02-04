@@ -24,9 +24,9 @@ library(rsvg)
 source("Scripts/Systematic_Review_CCA.R")
 
 ## Loading images
-massive_svg   = data.frame(x = 80, y = 50, image = "Icons/platygyra-spp-brain-coral.svg")
-branching_svg = data.frame(x = 80, y = 50, image = "Icons/acropora-cervicornis-staghorn-coral.svg")
-coral_cca_svg = data.frame(x = 80, y = 50, image = "Icons/plate-coral-cca.svg")
+massive_svg   = data.frame(x = 80, y = 50, image = "Figures/Icons/platygyra-spp-brain-coral.svg")
+branching_svg = data.frame(x = 80, y = 50, image = "Figures/Icons/acropora-cervicornis-staghorn-coral.svg")
+coral_cca_svg = data.frame(x = 80, y = 50, image = "Figures/Icons/plate-coral-cca.svg")
 
 ## Loading Models
 load("Models/fit_extension.RData")
