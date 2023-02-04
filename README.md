@@ -33,9 +33,10 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] rsvg_2.4.0         brms_2.18.0        Rcpp_1.0.9         readxl_1.4.1       Matrix_1.5-1      
- [6] ggimage_0.3.1      viridis_0.6.2      ggridges_0.5.4     pkgconfig_2.0.3    forcats_0.5.2     
-[11] stringr_1.4.1      dplyr_1.0.10       purrr_0.3.5        readr_2.1.3        tidyr_1.2.1       
-[16] tibble_3.1.8       tidyverse_1.3.2    posterior_1.3.1    patchwork_1.1.2    tidybayes_3.0.2   
-[21] hrbrthemes_0.8.0   viridisLite_0.4.1  geomtextpath_0.1.1 ggplot2_3.4.0   
+ [1] rsvg_2.4.0         brms_2.18.0        Rcpp_1.0.9         readxl_1.4.1      
+ [5] Matrix_1.5-1       ggimage_0.3.1      viridis_0.6.2      ggridges_0.5.4    
+ [9] pkgconfig_2.0.3    forcats_0.5.2      stringr_1.4.1      dplyr_1.0.10      
+[13] purrr_0.3.5        readr_2.1.3        tidyr_1.2.1        tibble_3.1.8      
+[17] tidyverse_1.3.2    posterior_1.3.1    patchwork_1.1.2    tidybayes_3.0.2   
+[21] hrbrthemes_0.8.0   viridisLite_0.4.1  geomtextpath_0.1.1 ggplot2_3.4.0    
 ```
