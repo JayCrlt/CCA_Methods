@@ -121,9 +121,9 @@ Figure_2Ba <- quantile_CCA_all %>% dplyr::filter(., Genus != "All CCA", Genus %n
 
 Figure_2Bb <- quantile_CCA_all %>% dplyr::filter(., Genus == "Amphiroa") %>% 
   ggplot(aes(x = Genus, y = Q_0.50)) + 
-  geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "#7f0f41") +
-  geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "#7f0f41") + theme_bw() +
-  geom_point(size = 5, show.legend = F, shape = 21, fill = "#7f0f41") +
+  geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "darkred") +
+  geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "darkred") + theme_bw() +
+  geom_point(size = 5, show.legend = F, shape = 21, fill = "darkred") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_x_discrete(name = "") + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
@@ -132,9 +132,9 @@ Figure_2Bb <- quantile_CCA_all %>% dplyr::filter(., Genus == "Amphiroa") %>%
 
 Figure_2Bc <- quantile_CCA_all %>% dplyr::filter(., Genus == "Halimeda") %>% 
   ggplot(aes(x = Genus, y = Q_0.50)) + 
-  geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "brown") +
-  geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "brown") + theme_bw() +
-  geom_point(size = 5, show.legend = F, shape = 21, fill = "brown") +
+  geom_linerange(aes(ymin = Q_0.01, ymax = Q_0.99), size = 1, col = "darkolivegreen4") +
+  geom_linerange(aes(ymin = Q_0.25, ymax = Q_0.75), size = 3, col = "darkolivegreen4") + theme_bw() +
+  geom_point(size = 5, show.legend = F, shape = 21, fill = "darkolivegreen4") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, face = "italic")) +
   scale_x_discrete(name = "") + 
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) +
