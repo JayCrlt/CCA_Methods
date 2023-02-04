@@ -1,7 +1,7 @@
 #### Set up environment ----
 
 ## Global options
-rm(list = ls()) ; options(warn = -1, cores = parallel::detectCores())
+rm(list = ls()) ; options(warn = -1, cores = parallel::detectCores()) ; setwd("..")
 
 ## Packages
 library(geomtextpath)
@@ -21,7 +21,7 @@ library(brms)
 library(rsvg)
 
 ## Loading systematic review analyse
-source("Scripts/Systematic_Review_CCA.R")
+source("R/Scripts/Systematic_Review_CCA.R")
 
 ## Loading images
 massive_svg   = data.frame(x = 80, y = 50, image = "Figures/Icons/platygyra-spp-brain-coral.svg")
