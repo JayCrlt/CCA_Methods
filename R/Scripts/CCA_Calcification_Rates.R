@@ -64,11 +64,18 @@ Quantile_CCA_Data_all = data_cca %>% dplyr::filter(Climate %in% c("Warm temperat
 Quantile_CCA_Data_avg = data.frame(Genus = "All CCA", 
                                    data_cca %>% dplyr::filter(Climate %in% c("Warm temperate", "Tropical")) %>% 
                                      dplyr::filter(Genus %notin% data_articulate$Genus) %>% 
+                                     dplyr::filter(Genus != "Halimeda") %>% 
+                                     group_by(Genus) %>% 
                                      summarise(., Q_0.01 = quantile(Rate_std, probs = 0.01),
-                                                  Q_0.25 = quantile(Rate_std, probs = 0.25),
-                                                  Q_0.50 = quantile(Rate_std, probs = 0.50),
-                                                  Q_0.75 = quantile(Rate_std, probs = 0.75),
-                                                  Q_0.99 = quantile(Rate_std, probs = 0.99)))
+                                               Q_0.25 = quantile(Rate_std, probs = 0.25),
+                                               Q_0.50 = quantile(Rate_std, probs = 0.50),
+                                               Q_0.75 = quantile(Rate_std, probs = 0.75),
+                                               Q_0.99 = quantile(Rate_std, probs = 0.99)) %>% 
+                                     summarise(., Q_0.01 = quantile(Q_0.01, probs = 0.01),
+                                               Q_0.25 = quantile(Q_0.25, probs = 0.25),
+                                               Q_0.50 = quantile(Q_0.50, probs = 0.50),
+                                               Q_0.75 = quantile(Q_0.75, probs = 0.75),
+                                               Q_0.99 = quantile(Q_0.99, probs = 0.99)))
 
 ## Corals
 Quantile_Cor_Data_all = data_Niklas %>% group_by(Genus) %>% summarise(., 
@@ -79,11 +86,17 @@ Quantile_Cor_Data_all = data_Niklas %>% group_by(Genus) %>% summarise(.,
                                Q_0.99 = quantile(conX, probs = 0.99))
 
 Quantile_Cor_Data_avg = data.frame(Genus = "All Corals", data_Niklas %>% 
+                                     group_by(Genus) %>% 
                                      summarise(., Q_0.01 = quantile(conX, probs = 0.01),
-                                                  Q_0.25 = quantile(conX, probs = 0.25),
-                                                  Q_0.50 = quantile(conX, probs = 0.50),
-                                                  Q_0.75 = quantile(conX, probs = 0.75),
-                                                  Q_0.99 = quantile(conX, probs = 0.99)))
+                                               Q_0.25 = quantile(conX, probs = 0.25),
+                                               Q_0.50 = quantile(conX, probs = 0.50),
+                                               Q_0.75 = quantile(conX, probs = 0.75),
+                                               Q_0.99 = quantile(conX, probs = 0.99)) %>% 
+                                     summarise(., Q_0.01 = quantile(Q_0.01, probs = 0.01),
+                                               Q_0.25 = quantile(Q_0.25, probs = 0.25),
+                                               Q_0.50 = quantile(Q_0.50, probs = 0.50),
+                                               Q_0.75 = quantile(Q_0.75, probs = 0.75),
+                                               Q_0.99 = quantile(Q_0.99, probs = 0.99)))
 
 # Combine into 2 unique datasets
 quantile_CCA_all = rbind(Quantile_CCA_Data_all, Quantile_CCA_Data_avg)
@@ -173,12 +186,12 @@ cca_cover       = seq(0,100,0.01)
 coral_cover     = seq(100,0,-0.01)
 
 # calcification rates for CCA and corals (kg CaCO3 m^-2 yr_1) excluding 3 outliers in CCA data
-cca_rate        = 0.81
-cca_rate_lwr    = 0.33
-cca_rate_upr    = 1.84
-coral_rate      = 3.10
-coral_rate_lwr  = 1.27
-coral_rate_upr  = 4.74
+cca_rate        = quantile(data_cca$Rate_std, probs = 0.50) * 10
+cca_rate_lwr    = quantile(data_cca$Rate_std, probs = 0.25) * 10
+cca_rate_upr    = quantile(data_cca$Rate_std, probs = 0.75) * 10
+coral_rate      = quantile(data_Niklas$conX , probs = 0.50) * 10
+coral_rate_lwr  = quantile(data_Niklas$conX , probs = 0.25) * 10
+coral_rate_upr  = quantile(data_Niklas$conX , probs = 0.75) * 10
 
 # coral rugosity = 1.5, 3 assuming a flat reef rugosity = 1 for CCA
 r_branching     = 2.97
