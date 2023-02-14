@@ -508,7 +508,7 @@ LTER_Summary_cca <- LTER_cca %>% group_by(Year, Site, Habitat, Transect, Quadrat
   summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
   summarise(sd_CCA_Cover = sd(CCA_Cover), CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site) %>% 
   summarise(CCA_Cover = mean(CCA_Cover), sd_CCA_Cover = mean(sd_CCA_Cover)) %>% 
-  mutate(., CR = CCA_Cover/100 * 1.23)
+  mutate(., CR = CCA_Cover/100 * cca_rate)
 LTER_CCA_avg = LTER_Summary_cca %>% group_by(Year) %>% 
   summarise(Cover = mean(CCA_Cover), sd_cover = sd(CCA_Cover), sd_CR = sd(CR), CR = mean(CR)) %>% 
   mutate(., Cover = as.numeric(Cover), sd_cover = as.numeric(sd_cover), CR = as.numeric(CR),
@@ -522,7 +522,7 @@ LTER_Summary_coral <- LTER_coral %>% group_by(Year, Site, Habitat, Transect, Qua
   summarise(CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site, Habitat) %>% 
   summarise(sd_CCA_Cover = sd(CCA_Cover), CCA_Cover = mean(CCA_Cover)) %>% group_by(Year, Site) %>% 
   summarise(CCA_Cover = mean(CCA_Cover), sd_CCA_Cover = mean(sd_CCA_Cover)) %>% 
-  mutate(., CR = CCA_Cover/100 * 3.09) %>% mutate(., Year = as.numeric(Year)) %>% 
+  mutate(., CR = CCA_Cover/100 * coral_rate) %>% mutate(., Year = as.numeric(Year)) %>% 
   inner_join(., SC, by = "Year") %>% mutate(., CR_SC = CR * SC)
 LTER_Coral_avg = LTER_Summary_coral %>% group_by(Year) %>% 
   summarise(sd_cover = sd(CCA_Cover), Cover = mean(CCA_Cover), sd_CR = sd(CR), CR = mean(CR), CR = mean(CR)) %>% 
